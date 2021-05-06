@@ -1,0 +1,8 @@
+
+{{#vendorExtensions.filterQueries}}
+		val {{filter}}Filter = if ({{filter}} != null) "{{filter}}==${{filter}}{{#hasNext}};{{/hasNext}}" else ""
+{{/vendorExtensions.filterQueries}}
+		var complexSearch = {{#vendorExtensions.filterQueries}}{{filter}}Filter{{#hasNext}} + {{/hasNext}}{{/vendorExtensions.filterQueries}}
+		if (search!=null && search.isNotEmpty()) {
+			complexSearch = complexSearch + ";" + search
+		}

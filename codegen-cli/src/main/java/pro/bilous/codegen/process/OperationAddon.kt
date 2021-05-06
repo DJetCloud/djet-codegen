@@ -129,64 +129,78 @@ class OperationAddon(val codegen: CodeCodegen) {
 	}
 
 	fun fixOperationParams(operation: CodegenOperation) {
-		// remove bearer token header param if exist.
+		removeUnnecessaryParams(operation)
+		removeSearchParamFromNoReturnListOperation(operation)
+		resolveParamsDataTypes(operation)
+		addPageParamForGetListOperation(operation)
+		setAllParamsHasMoreFlag(operation)
+	}
+
+	private fun removeUnnecessaryParams(operation: CodegenOperation){
 		operation.allParams.removeIf { it.isHeaderParam && it.paramName == "bearer" }
 		operation.allParams.removeIf {
 			it.isQueryParam &&
 					arrayOf("options", "startTime", "endTime").contains(it.paramName)
 		}
-
-		operation.allParams.forEach {
-			if (!it.required && it.isPrimitiveType) {
-				it.dataType = "${it.dataType}?"
-			}
-		}
-
-		// add all query params
-		val searchParam = operation.queryParams.find { it.paramName == "search" }
-		if (searchParam == null) {
-			operation.allParams.forEach { it.hasMore = true }
-			operation.allParams.last().hasMore = false
-		}
-
-		if (operation.returnContainer != "List") {
-			val removed = operation.queryParams.removeIf { it.paramName == "search" }
-			operation.allParams.removeIf { it.paramName == "search" }
-			if (removed && operation.allParams.isNotEmpty()) {
-				operation.allParams.last().hasMore = false
-			}
-			return
-		}
-		// add page parameter
-		if (operation.httpMethod.toLowerCase() == "get" && operation.isListContainer) {
-			val pageParameter = CodegenParameter()
-					.apply {
-						dataType = "Pageable"
-						baseType = "Pageable"
-						paramName = "page"
-						baseName = "page"
-						isPrimitiveType = false
-						isInteger = false
-						vendorExtensions["isPageParam"] = true
-					}
-			operation.allParams.add(pageParameter)
-		}
-
-		//operation.queryParams.add(pageParameter)
-		//operation.queryParams.forEach { it.isQueryParam = true}
-
-
-
-		operation.allParams.forEach { it.hasMore = true }
-		operation.allParams.last().hasMore = false
-
 	}
 
-	private fun populateClassnames(objs: MutableMap<String, Any>, operations: MutableMap<String, Any>, ops: MutableList<CodegenOperation>) {
+	private fun resolveParamsDataTypes(operation: CodegenOperation){
+		operation.allParams.forEach {
+			resolveParamDataType(it)
+			setDataTypeNullableForNotRequiredParam(it)
+		}
+	}
+
+	private fun removeSearchParamFromNoReturnListOperation(operation: CodegenOperation) {
+		if (operation.returnContainer != "List") {
+			operation.queryParams.removeIf { it.paramName == "search" }
+			operation.allParams.removeIf { it.paramName == "search" }
+		}
+	}
+
+	private fun addPageParamForGetListOperation(operation: CodegenOperation){
+		if (operation.httpMethod.toLowerCase() == "get" && operation.isListContainer) {
+			val pageParameter = CodegenParameter()
+				.apply {
+					dataType = "Pageable"
+					baseType = "Pageable"
+					paramName = "page"
+					baseName = "page"
+					isPrimitiveType = false
+					isInteger = false
+					vendorExtensions["isPageParam"] = true
+				}
+			operation.allParams.add(pageParameter)
+		}
+	}
+
+	private fun setAllParamsHasMoreFlag(operation: CodegenOperation){
+		operation.allParams.forEach { it.hasMore = true }
+		operation.allParams.last().hasMore = false
+	}
+
+	private fun resolveParamDataType(param: CodegenParameter) {
+		param.dataType = when(param.dataType) {
+			"Integer" -> "Int"
+			else -> param.dataType
+		}
+	}
+
+	private fun setDataTypeNullableForNotRequiredParam(param: CodegenParameter) {
+		if (!param.required && param.isPrimitiveType) {
+			param.dataType = "${param.dataType}?"
+		}
+	}
+
+	private fun populateClassnames(
+		objs: MutableMap<String, Any>,
+		operations: MutableMap<String, Any>,
+		ops: MutableList<CodegenOperation>
+	) {
 		val returnType = resolveClassname(objs, ops).removeSuffix("Model")
 		objs["returnEntityType"] = returnType
 		val classPrefix = operations["classname"]
-				.toString().removeSuffix("Api").removeSuffix("Repository")
+			.toString().removeSuffix("Api").removeSuffix("Repository")
 
 		objs["controllerClassname"] = classPrefix + "Controller"
 		objs["serviceClassname"] = classPrefix + "Service"
@@ -215,18 +229,22 @@ class OperationAddon(val codegen: CodeCodegen) {
 		objs["testImports"] = importList
 	}
 
-	private fun addImportElements(testModel: CodegenModel,
-								  mappingSet: MutableSet<String>,
-								  importList: MutableList<Map<String, String>>,) {
+	private fun addImportElements(
+		testModel: CodegenModel,
+		mappingSet: MutableSet<String>,
+		importList: MutableList<Map<String, String>>,
+	) {
 		testModel.vars.forEach {
 			if (it.vendorExtensions.containsKey("testModel")) {
 				val inner = it.vendorExtensions["testModel"] as CodegenModel
 				if (!mappingSet.contains(inner.classname)) {
 					mappingSet.add(inner.classname)
-					importList.add(mapOf(
-						"import" to codegen.toModelImport(inner.classname),
-						"classname" to inner.classname
-					))
+					importList.add(
+						mapOf(
+							"import" to codegen.toModelImport(inner.classname),
+							"classname" to inner.classname
+						)
+					)
 					addImportElements(inner, mappingSet, importList)
 				}
 			}
@@ -256,7 +274,11 @@ class OperationAddon(val codegen: CodeCodegen) {
 				applyTestVars(embeddedModel)
 				it.vendorExtensions["testModel"] = embeddedModel
 				it.vendorExtensions["hasTestModel"] = true
-			} else if (it.isListContainer && !it.complexType.isNullOrEmpty() && !arrayOf("List<String>", "List<String>?").contains(it.datatypeWithEnum)) {
+			} else if (it.isListContainer && !it.complexType.isNullOrEmpty() && !arrayOf(
+					"List<String>",
+					"List<String>?"
+				).contains(it.datatypeWithEnum)
+			) {
 				val embeddedInListModel = readModelByType(it.complexType)
 				applyTestVars(embeddedInListModel)
 				it.vendorExtensions["testModel"] = embeddedInListModel
