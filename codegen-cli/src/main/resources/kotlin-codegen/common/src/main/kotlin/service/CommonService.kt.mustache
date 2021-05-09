@@ -14,4 +14,5 @@ interface CommonService<E: BaseResource> {
 	fun getAll(pageable: Pageable, query: String?): Page<E>
 	fun getByIds(ids: List<String>): List<E>
 	fun deleteAll(domains: List<E>)
+	fun getByIdAndFilter(id: String, filter: String): E?
 }
