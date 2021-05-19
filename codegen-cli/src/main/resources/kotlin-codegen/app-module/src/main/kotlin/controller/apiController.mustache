@@ -2,6 +2,13 @@ package {{appPackage}}.controller
 
 {{#imports}}import {{import}}
 {{/imports}}
+{{#operations}}
+	{{#operation}}
+		{{#vendorExtensions.mustBuildFilterClass}}
+import {{appPackage}}.controller.filter.{{vendorExtensions.filterClassName}}
+		{{/vendorExtensions.mustBuildFilterClass}}
+	{{/operation}}
+{{/operations}}
 import {{appPackage}}.service.{{serviceClassname}}
 import {{appPackage}}.controller.api.{{classname}}
 import io.swagger.annotations.ApiParam
@@ -21,7 +28,7 @@ class {{controllerClassname}}(service: {{serviceClassname}})
 
 {{#operation}}
 
-    override fun {{vendorExtensions.operationMethodName}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>pageParams}}{{#hasMore}},{{/hasMore}}{{/allParams}}): {{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>returnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {
+    override fun {{vendorExtensions.operationMethodName}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>pageParams}}{{>filterParams}}{{#hasMore}},{{/hasMore}}{{/allParams}}): {{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>returnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {
         {{>apiControllerMethodBody}}
     }
 {{/operation}}

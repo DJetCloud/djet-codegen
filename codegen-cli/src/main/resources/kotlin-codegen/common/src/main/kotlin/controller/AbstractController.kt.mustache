@@ -26,13 +26,27 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return ResponseEntity(entity, HttpStatus.OK)
 	}
 
+	override fun delete(id: String,  filter: CommonFilter<E>): ResponseEntity<E> {
+		// TO DO: add filtering
+		return delete(id)
+	}
+
 	override fun getById(id: String): ResponseEntity<E> {
 		val entity = service.getById(id)?: throw ResourceNotFoundException()
 		return ResponseEntity(entity, HttpStatus.OK)
 	}
 
+	override fun getById(id: String,  filter: CommonFilter<E>): ResponseEntity<E> {
+		val entity = service.getById(id, filter)?: throw ResourceNotFoundException()
+		return ResponseEntity(entity, HttpStatus.OK)
+	}
+
 	override fun getAll(search: String?, pageable : Pageable): ResponseEntity<Page<E>> {
 		return ResponseEntity(service.getAll(pageable, search), HttpStatus.OK)
+	}
+
+	override fun getAll(search: String?, pageable : Pageable,  filter: CommonFilter<E>): ResponseEntity<Page<E>> {
+		return ResponseEntity(service.getAll(pageable, search, filter), HttpStatus.OK)
 	}
 
 	override fun update(id: String, domain: E): ResponseEntity<E> {
@@ -42,7 +56,16 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return ResponseEntity(result, HttpStatus.OK)
 	}
 
+	override fun update(id: String, domain: E,  filter: CommonFilter<E>): ResponseEntity<E> {
+		// TO DO: add filtering
+		return update(id, domain)
+	}
+
 	override fun modify(id: String, domain: E): ResponseEntity<E> {
+		return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
+	}
+
+	override fun modify(id: String, domain: E,  filter: CommonFilter<E>): ResponseEntity<E> {
 		return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
 	}
 
@@ -50,10 +73,20 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return service.saveAll(domains)
 	}
 
+	override fun saveAll(domains: List<E>,  filter: CommonFilter<E>): List<E> {
+		// TO DO: add filtering
+		return saveAll(domains)
+	}
+
 	override fun deleteAll(@RequestParam ids: List<String>): List<E> {
 		val domains = service.getByIds(ids)
 		service.deleteAll(domains)
 		return domains
+	}
+
+	override fun deleteAll(@RequestParam ids: List<String>,  filter: CommonFilter<E>): List<E> {
+		// TO DO: add filtering
+		return deleteAll(ids)
 	}
 
 	override fun create(parentId: String, domain: E): ResponseEntity<E> {
@@ -77,11 +110,27 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return ResponseEntity(domain, HttpStatus.OK)
 	}
 
+	override fun getById(parentId: String, id: String,  filter: CommonFilter<E>): ResponseEntity<E> {
+		val domain = service.getById(id, filter) ?: throw ResourceNotFoundException()
+		{{#hasEntityBlocks}}
+		Assert.isTrue(parentId == domain.entity.parent?.id, "parent $parentId is not valid")
+		{{/hasEntityBlocks}}
+		{{^hasEntityBlocks}}
+		//TODO: should assert parent id here
+		{{/hasEntityBlocks}}
+		return ResponseEntity(domain, HttpStatus.OK)
+	}
+
 	override fun delete(parentId: String, id: String): ResponseEntity<E> {
 		val domain = service.getById(id) ?: throw ResourceNotFoundException()
 		validateParent(domain, parentId)
 		service.delete(domain)
 		return ResponseEntity(domain, HttpStatus.OK)
+	}
+
+	override fun delete(parentId: String, id: String,  filter: CommonFilter<E>): ResponseEntity<E> {
+		// TO DO: add filtering
+		return delete(parentId, id)
 	}
 
 	override fun update(parentId: String, id: String, domain: E): ResponseEntity<E> {
@@ -91,7 +140,16 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return ResponseEntity(updatedEntity, HttpStatus.OK)
 	}
 
+	override fun update(parentId: String, id: String, domain: E,  filter: CommonFilter<E>): ResponseEntity<E> {
+		// TO DO: add filtering
+		return update(parentId, id, domain)
+	}
+
 	override fun modify(parentId: String, id: String, domain: E): ResponseEntity<E> {
+		return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
+	}
+
+	override fun modify(parentId: String, id: String, domain: E,  filter: CommonFilter<E>): ResponseEntity<E> {
 		return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
 	}
 
@@ -105,6 +163,11 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return service.saveAll(domains)
 	}
 
+	override fun saveAll(parentId: String, domains: List<E>,  filter: CommonFilter<E>): List<E> {
+		// TO DO: add filtering
+		return saveAll(parentId, domains)
+	}
+
 	override fun deleteAll(parentId: String, ids: List<String>): List<E> {
 		val entities = service.getByIds(ids)
 		entities.forEach { domain ->
@@ -114,10 +177,19 @@ abstract class AbstractController<E: BaseResource, S: CommonService<E>>(val  ser
 		return entities
 	}
 
+	override fun deleteAll(parentId: String, ids: List<String>,  filter: CommonFilter<E>): List<E> {
+		// TO DO: add filtering
+		return deleteAll(parentId, ids)
+	}
+
 	override fun getAll(parentId: String, search: String?, pageable: Pageable): ResponseEntity<Page<E>> {
 		val searchCriteria = getSearchCriteria(search, parentId)
-
 		return ResponseEntity(service.getAll(pageable, searchCriteria), HttpStatus.OK)
+	}
+
+	override fun getAll(parentId: String, search: String?, pageable: Pageable,  filter: CommonFilter<E>): ResponseEntity<Page<E>> {
+		val searchCriteria = getSearchCriteria(search, parentId)
+		return ResponseEntity(service.getAll(pageable, searchCriteria, filter), HttpStatus.OK)
 	}
 
 	private fun validateParent(domain: E, parentId: String) {

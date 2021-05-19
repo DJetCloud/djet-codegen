@@ -2,6 +2,13 @@ package {{appPackage}}.controller.api
 
 {{#imports}}import {{import}}
 {{/imports}}
+{{#operations}}
+	{{#operation}}
+		{{#vendorExtensions.mustBuildFilterClass}}
+import {{appPackage}}.controller.filter.{{vendorExtensions.filterClassName}}
+		{{/vendorExtensions.mustBuildFilterClass}}
+	{{/operation}}
+{{/operations}}
 import io.swagger.annotations.Api
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiResponse
@@ -26,7 +33,7 @@ interface {{classname}} {
         ApiResponse(code = {{{code}}}, message = "{{{message}}}"){{#hasMore}},{{/hasMore}}{{/responses}}
     )
     @{{httpMethod}}Mapping("{{{path}}}")
-    fun {{vendorExtensions.operationMethodName}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>pageParams}}{{#hasMore}},{{/hasMore}}{{^hasMore}}{{/hasMore}}{{/allParams}}): {{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>returnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {
+    fun {{vendorExtensions.operationMethodName}}({{#allParams}}{{>queryParams}}{{>pathParams}}{{>headerParams}}{{>bodyParams}}{{>formParams}}{{>pageParams}}{{>filterParams}}{{#hasMore}},{{/hasMore}}{{^hasMore}}{{/hasMore}}{{/allParams}}): {{#responseWrapper}}{{.}}<{{/responseWrapper}}ResponseEntity<{{>returnTypes}}>{{#responseWrapper}}>{{/responseWrapper}} {
         return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
     }
 {{/operation}}
