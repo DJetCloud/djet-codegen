@@ -67,7 +67,7 @@ open class InCodeGenerator : DefaultGenerator() {
 
 	override fun writeToFile(filename: String, contents: String?): File {
 		val newFilename = if (filename.contains("/.openapi-generator/")) {
-			filename.replace("/.openapi-generator/", "/.difhub-codegen/")
+			filename.replace("/.openapi-generator/", "/djet/")
 		} else filename
 		return super.writeToFile(newFilename, contents)
 	}

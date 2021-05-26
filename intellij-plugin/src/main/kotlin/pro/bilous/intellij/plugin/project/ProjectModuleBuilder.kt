@@ -18,9 +18,9 @@ class ProjectModuleBuilder: ModuleBuilder() {
 
     override fun getModuleType() = StdModuleTypes.JAVA
     override fun getNodeIcon() = Icons.SpringBoot
-    override fun getBuilderId() = "Create new System"
-    override fun getDescription() = "Bootstrap system using DifHub"
-    override fun getPresentableName() = "Bootstrap from DifHub"
+    override fun getBuilderId() = "Create System"
+    override fun getDescription() = "Bootstrap system using MetUCat metadata"
+    override fun getPresentableName() = "DJet Bootstrap"
     override fun getParentGroup() = "Build Tools"
 
     override fun createWizardSteps(wizardContext: WizardContext,

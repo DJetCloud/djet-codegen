@@ -5,6 +5,7 @@ import pro.bilous.intellij.plugin.gen.CodeGenerator
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.vfs.VirtualFileManager
 import org.slf4j.LoggerFactory
+import pro.bilous.difhub.config.SystemSettings
 import pro.bilous.difhub.convert.DifHubToSwaggerConverter
 import pro.bilous.difhub.write.YamlWriter
 import java.lang.Exception
@@ -36,7 +37,8 @@ class ProjectFilesCreator {
     }
 
     private fun createOpenApiFiles(request: ProjectCreationRequest, configFolder: String) {
-        DifHubToSwaggerConverter(request.system).convertAll().forEach {
+		val systemSettings = SystemSettings(request.system, request.datasetStatus)
+        DifHubToSwaggerConverter(systemSettings).convertAll().forEach {
             try {
                 YamlWriter(request.system).writeFile(it.openApi, configFolder, "${it.appName.toLowerCase()}-api")
             } catch (error: Exception) {
@@ -57,15 +59,17 @@ class ProjectFilesCreator {
             "basePackage" to request.basePackage,
             "dbName" to request.dbName,
             "database" to request.database,
+			"defaultStringSize" to request.defaultStringSize.toInt(),
             "addKotlin" to request.addKotlin,
             "dateLibrary" to request.dateLibrary,
             "addBindingEntity" to request.addBindingEntity,
-			"authorizationEnabled" to request.authorizationEnabled
+			"authorizationEnabled" to request.authorizationEnabled,
+			"datasetStatus" to request.datasetStatus.name.toLowerCase()
         )
         YamlWriter(request.system).writeFile(configMap, configFolder, "settings")
     }
 
     private fun executeCodeGenerator(projectPath: String) {
-        CodeGenerator().generate(projectPath)
+		CodeGenerator().generate(projectPath)
     }
 }

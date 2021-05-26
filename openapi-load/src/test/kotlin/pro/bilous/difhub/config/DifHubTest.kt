@@ -79,7 +79,7 @@ class DifHubTest {
 		val name = "testName"
 		assertEquals(
 			"organizations/test org/systems/testSystem/applications/testApp/datasets/testName",
-			conf.getDatatsetTypeUrl(system, app, name)
+			conf.getDatasetTypeUrl(system, app, name)
 		)
 	}
 }

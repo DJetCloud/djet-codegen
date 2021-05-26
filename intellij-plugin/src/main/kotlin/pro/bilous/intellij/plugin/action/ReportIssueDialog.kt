@@ -28,14 +28,14 @@ class ReportIssueDialog : DialogWrapper(true) {
         textArea.isEditable = true
         textArea.caretPosition = 0
         init()
-        title = "Report MD2.0 Plugin Issue"
+        title = "Report DJet Issue"
         isModal = true
     }
 
     override fun createCenterPanel(): JComponent? {
         val pane = JPanel(BorderLayout(0, 5))
-        val productName = "MD2.0 Framework Intellij Plugin"
-        val vendorName = "MD2.0 Platform Team"
+        val productName = "DJet Intellij Plugin"
+        val vendorName = "DJetCloud"
 
         val header = JLabel(MdBundle.message("reportIssue.dialog.header", productName, vendorName))
 

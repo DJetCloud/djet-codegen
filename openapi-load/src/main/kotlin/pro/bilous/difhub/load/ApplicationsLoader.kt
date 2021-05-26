@@ -1,6 +1,7 @@
 package pro.bilous.difhub.load
 
 import pro.bilous.difhub.config.ConfigReader
+import pro.bilous.difhub.config.SystemSettings
 import pro.bilous.difhub.model.Model
 
 class ApplicationsLoader {
@@ -29,14 +30,14 @@ class ApplicationsLoader {
 		return modelLoader.loadModels(difhub.getApplicationsUrl(system))
 	}
 
-	fun loadOne(system: String, app: String): Model? {
+	fun loadOne(systemSettings: SystemSettings, app: String): Model? {
 		val difhub = config.difhub
-		return modelLoader.loadModel(difhub.getApplicationUrl(system, app))
+		return modelLoader.loadModel(difhub.getApplicationUrl(systemSettings.name, app), systemSettings)
 	}
 
-	fun loadAppSettings(system: String, app: String): Model? {
+	fun loadAppSettings(systemSettings: SystemSettings, app: String): Model? {
 		val difhub = config.difhub
-		return modelLoader.loadModel(difhub.getApplicationSettingsUrl(system, app))
+		return modelLoader.loadModel(difhub.getApplicationSettingsUrl(systemSettings.name, app), systemSettings)
 	}
 
 }

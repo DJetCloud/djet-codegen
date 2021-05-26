@@ -1,5 +1,7 @@
 package pro.bilous.intellij.plugin.project
 
+import pro.bilous.difhub.config.DatasetStatus
+
 class ProjectCreationRequest {
 
     var username: String? = null
@@ -23,6 +25,8 @@ class ProjectCreationRequest {
     var dateLibrary = "default"
     var addBindingEntity = true
     var authorizationEnabled = false
+	var defaultStringSize: String = "255"
+	var datasetStatus: DatasetStatus = DatasetStatus.DRAFT
 
     fun getMetadata(): Any? {
         return null

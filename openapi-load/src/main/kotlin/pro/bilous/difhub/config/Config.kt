@@ -24,7 +24,7 @@ data class DifHub(
 	fun getDatasetsUrl(system: String, application: String)
 			= "${getApplicationsUrl(system)}/$application/datasets"
 
-	fun getDatatsetTypeUrl(system: String, application: String, type: String)
+	fun getDatasetTypeUrl(system: String, application: String, type: String)
 			= "${getDatasetsUrl(system, application)}/$type"
 }
 

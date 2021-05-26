@@ -1,15 +1,15 @@
 <idea-plugin allow-bundled-update="true">
-    <id>bhn.intellij.plugin</id>
+    <id>djet.intellij.plugin</id>
  <!--   <depends>com.intellij.properties</depends>
     <depends>org.jetbrains.plugins.gradle</depends>
     <depends>org.intellij.groovy</depends>
     <depends>XPathView</depends>-->
 
-    <name>difhub-codegen</name>
-    <vendor email="vova.bilous@hotmail.com" url="https://bilous.pro">BilousPro</vendor>
+    <name>DJet</name>
+    <vendor email="contact@bilous.pro" url="https://djet.cloud">DJetCloud</vendor>
 
     <description><![CDATA[
-    Plugin to generate entire microservice system based on DifHub design.
+    Plugin to bootstrap entire Cloud Native microservice system based on Metadata Driven design.
     ]]></description>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
@@ -24,9 +24,9 @@
     </extensions>
 
     <actions>
-        <group id="menuGroup" text="DifHub" popup="true">
+        <group id="menuGroup" text="DJet" popup="true">
             <add-to-group group-id="MainMenu" relative-to-action="ToolsMenu" anchor="after"/>
-			<action id="difhubCredentials" text="DifHub Login" class="pro.bilous.intellij.plugin.action.menu.DifHubLoginAction"/>
+			<action id="difhubCredentials" text="MetUCat Login" class="pro.bilous.intellij.plugin.action.menu.DifHubLoginAction"/>
 			<action id="projectSettings" text="Project Settings" class="pro.bilous.intellij.plugin.action.menu.ProjectPropertiesAction"/>
 			<separator/>
 			<action id="loadOpenApiSpec" text="Load OpenApi" class="pro.bilous.intellij.plugin.action.menu.DifHubLoadOpenApiAction"/>

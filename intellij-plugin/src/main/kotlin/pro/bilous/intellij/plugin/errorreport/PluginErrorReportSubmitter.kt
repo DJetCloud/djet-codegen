@@ -14,21 +14,20 @@ import org.slf4j.LoggerFactory
 import java.awt.Component
 
 class PluginErrorReportSubmitter : ErrorReportSubmitter() {
-    companion object {
-        private val logger = LoggerFactory.getLogger(PluginErrorReportSubmitter::class.java)
-    }
+	companion object {
+		private val logger = LoggerFactory.getLogger(PluginErrorReportSubmitter::class.java)
+	}
 
-    override fun getReportActionText()
-        = "Report to Plugin Developer (Please include your email address)"
+	override fun getReportActionText() = "Report to Plugin Developer (Please include your email address)"
 
-    override fun submit(
-        events: Array<out IdeaLoggingEvent>,
-        additionalInfo: String?,
-        parentComponent: Component,
-        consumer: Consumer<SubmittedReportInfo>
-    ): Boolean {
-        val error = events.firstOrNull() ?: return false
-        logger.error("Plugin failed with error: $error", error)
+	override fun submit(
+		events: Array<IdeaLoggingEvent>,
+		additionalInfo: String?,
+		parentComponent: Component,
+		consumer: Consumer<in SubmittedReportInfo>
+	): Boolean {
+		val error = events.firstOrNull() ?: return false
+		logger.error("Plugin failed with error: $error", error)
 //        try {
 //            val errorModel = createErrorBean(error, additionalInfo)
 //            SentryErrorPublisher.eventSendCallback = object : EventSendCallback {
@@ -48,25 +47,25 @@ class PluginErrorReportSubmitter : ErrorReportSubmitter() {
 //            Sentry.capture(e)
 //            return false
 //        }
-        return true
-    }
+		return true
+	}
 
-    private fun createErrorBean(event: IdeaLoggingEvent, additionalInfo: String?): ErrorModel {
-        return ErrorModel(
-            errorEvent = event,
-            additionalInfo = additionalInfo,
-            pluginVersion = Version.get(),
-            intellijVersion = getIntellijVersion(),
-            os = "${System.getProperty("os.name")} ${System.getProperty("os.version")}",
-            userName = System.getProperty("user.name"),
-            java = "${System.getProperty("java.vendor")} ${System.getProperty("java.version")}",
-            exception = event.throwableText,
-            issueTitle = event.message ?: (event.data as LogMessage).throwable.message ?: "Unknown Error"
-        )
-    }
+	private fun createErrorBean(event: IdeaLoggingEvent, additionalInfo: String?): ErrorModel {
+		return ErrorModel(
+			errorEvent = event,
+			additionalInfo = additionalInfo,
+			pluginVersion = Version.get(),
+			intellijVersion = getIntellijVersion(),
+			os = "${System.getProperty("os.name")} ${System.getProperty("os.version")}",
+			userName = System.getProperty("user.name"),
+			java = "${System.getProperty("java.vendor")} ${System.getProperty("java.version")}",
+			exception = event.throwableText,
+			issueTitle = event.message ?: (event.data as LogMessage).throwable.message ?: "Unknown Error"
+		)
+	}
 
-    private fun getIntellijVersion(): String {
-        val appInfo = ApplicationInfoEx.getInstanceEx()
-        return "${appInfo.versionName} ${appInfo.majorVersion}.${appInfo.minorVersion} ${appInfo.apiVersion}"
-    }
+	private fun getIntellijVersion(): String {
+		val appInfo = ApplicationInfoEx.getInstanceEx()
+		return "${appInfo.versionName} ${appInfo.majorVersion}.${appInfo.minorVersion} ${appInfo.apiVersion}"
+	}
 }

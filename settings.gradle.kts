@@ -1,4 +1,4 @@
-rootProject.name = "difhub-codegen"
+rootProject.name = "djet-codegen"
 
 include("openapi-load")
 include("codegen-cli")

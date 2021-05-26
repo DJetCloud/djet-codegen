@@ -3,6 +3,7 @@ package pro.bilous.intellij.plugin.project
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
+import pro.bilous.difhub.config.DatasetStatus
 import java.lang.IllegalStateException
 
 class ProjectFileManager {
@@ -35,10 +36,11 @@ class ProjectFileManager {
 			basePackage = "add base package"
 			dbName = "add db name"
 			database = "MySQL"
+			defaultStringSize = "255"
 			addKotlin = true
 			dateLibrary = "default"
 			addBindingEntity = true
-
+			datasetStatus = DatasetStatus.APPROVED
 		}
 		fileCreator.createConfigFile(request, configFolder)
 

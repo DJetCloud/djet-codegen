@@ -3,7 +3,9 @@ package pro.bilous.difhub.load
 import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Test
 import pro.bilous.difhub.config.Config
+import pro.bilous.difhub.config.DatasetStatus
 import pro.bilous.difhub.config.DifHub
+import pro.bilous.difhub.config.SystemSettings
 import pro.bilous.difhub.model.Identity
 import pro.bilous.difhub.model.Model
 import pro.bilous.difhub.model.Object
@@ -91,12 +93,12 @@ class ApplicationsLoaderTest {
 		val config = Config(DifHub("test", "test"))
 
 		val modelLoaderMock = mock<IModelLoader> {
-			on { loadModel(config.difhub.getApplicationUrl("system", "app")) } doReturn
+			on { loadModel(config.difhub.getApplicationUrl("system", "app"), SystemSettings("system", DatasetStatus.APPROVED)) } doReturn
 						Model(identity = Identity(name = "application1"))
 		}
 		loader.modelLoader = modelLoaderMock
 		loader.config = config
-		val app = loader.loadOne("system", "app") ?: throw IllegalArgumentException("should not return null")
+		val app = loader.loadOne(SystemSettings("system", DatasetStatus.APPROVED), "app") ?: throw IllegalArgumentException("should not return null")
 
 		assertNotNull(app)
 		assertEquals("application1",app.identity.name)
@@ -108,12 +110,12 @@ class ApplicationsLoaderTest {
 		val config = Config(DifHub("test", "test"))
 
 		val modelLoaderMock = mock<IModelLoader> {
-			on { loadModel(config.difhub.getApplicationSettingsUrl("system", "app")) } doReturn
+			on { loadModel(config.difhub.getApplicationSettingsUrl("system", "app"), SystemSettings("system", DatasetStatus.APPROVED)) } doReturn
 					Model(identity = Identity(name = "settings1"))
 		}
 		loader.modelLoader = modelLoaderMock
 		loader.config = config
-		val settings = loader.loadAppSettings("system", "app") ?: throw IllegalArgumentException("should not return null")
+		val settings = loader.loadAppSettings(SystemSettings("system", DatasetStatus.APPROVED), "app") ?: throw IllegalArgumentException("should not return null")
 
 		assertNotNull(settings)
 		assertEquals("settings1", settings.identity.name)

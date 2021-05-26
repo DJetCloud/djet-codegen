@@ -97,7 +97,7 @@ class ModelPropertyProcessorTest {
 		processor.resolvePropertyType(property)
 
 		val ve = property.vendorExtensions
-		assertEquals("decimal", ve["columnType"])
+		assertEquals("decimal(10,2)", ve["columnType"])
 		assertTrue(property.isNumber)
 	}
 
