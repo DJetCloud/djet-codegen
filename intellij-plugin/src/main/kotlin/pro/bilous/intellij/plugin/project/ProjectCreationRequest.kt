@@ -27,6 +27,7 @@ class ProjectCreationRequest {
     var authorizationEnabled = false
 	var defaultStringSize: String = "255"
 	var datasetStatus: DatasetStatus = DatasetStatus.DRAFT
+	var enumsType = "EnumClasses"
 
     fun getMetadata(): Any? {
         return null

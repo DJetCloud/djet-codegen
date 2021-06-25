@@ -1,0 +1,5 @@
+enum class {{classname}}(val displayName: String, val description: String? = null) {
+{{#vendorExtensions.x-enum-metadata}}
+ 	{{value}}("{{{name}}}", "{{{description}}}"),
+{{/vendorExtensions.x-enum-metadata}}
+}

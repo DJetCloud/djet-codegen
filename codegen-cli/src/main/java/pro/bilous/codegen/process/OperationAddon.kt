@@ -18,13 +18,6 @@ class OperationAddon(val codegen: CodeCodegen) {
 
 		for (operation in ops) {
 			if (listOf("post", "put").contains(operation.httpMethod.toLowerCase())) {
-				val errorsParameter = CodegenParameter()
-				errorsParameter.paramName = "errors"
-				errorsParameter.dataType = "Errors"
-				errorsParameter.datatypeWithEnum = "Errors"
-				errorsParameter.secondaryParam = true
-				operation.allParams.add(errorsParameter)
-
 				operation.allParams.forEach { it.hasMore = true }
 				operation.allParams.last().hasMore = false
 			}
@@ -208,6 +201,7 @@ class OperationAddon(val codegen: CodeCodegen) {
 
 		val testModel = findTestCodegenModel(returnType)
 		objs["testModel"] = testModel
+		//TODO: set entity state
 		applyImportsForTest(objs, testModel)
 
 		objs["converterLinkMethodname"] = ops.find { operation ->

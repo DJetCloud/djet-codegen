@@ -9,7 +9,7 @@ class EnumConverter(private val source: Model) {
 	fun convert(): EnumModel {
 		val nameOrder = findField(usage = "name")?.order ?: 1
 		val descOrder = findField(usage = "description")?.order ?: 2
-		val valueOrder = findField(usage = "value")?.order ?: 3
+		val valueOrder = findField(usage = "value")?.order ?: findField(usage = "code")?.order ?: 3
 
 		val entries = mutableSetOf<EnumEntry>()
 		source.data?.records?.forEach {

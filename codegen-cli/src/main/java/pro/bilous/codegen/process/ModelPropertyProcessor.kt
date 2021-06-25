@@ -41,8 +41,16 @@ open class ModelPropertyProcessor(val codegen: CodeCodegen) {
 		property.vendorExtensions["isNeedSkip"] = "id" == property.name.toLowerCase()
 		if (processIfXCodegenType(model, property)) return
 		processIfListOrIdentityComplexModelEndsWithId(model, property)
-		if (isEnum(property)) {
+
+		val enumsType = codegen.additionalProperties()["enumsType"] as String?
+		val isMetadataDefinitionEnum = enumsType != null && enumsType.equals("MetadataEnums", true)
+		println("\n\n\n ---------- \n $enumsType \n ------------ \n\n\n")
+		if (isEnum(property) && isMetadataDefinitionEnum) {
 			convertToMetadataProperty(property, model)
+		} else if (isEnum(property) && !isMetadataDefinitionEnum) {
+			property.vendorExtensions["isEnumClass"] = true
+			property.datatypeWithEnum = property.complexType
+
 		}
 		addGuidAnnotation(property, model)
 	}

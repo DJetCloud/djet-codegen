@@ -24,6 +24,7 @@ class ConfiguratorWrapper(
 		val specDir = instance.getSpecCopyValue()
 		val basePackage =  settings.dynamicProperties["basePackage"].toString()
 		val database = settings.dynamicProperties["database"]?.toString() ?: "MySQL"
+		val enumsType = settings.dynamicProperties["enumsType"]?.toString() ?: "EnumClasses"
 
 		val system = settings.dynamicProperties["system"]!!.toString()
 		instance.setCustomProperty("systemLower", system.toLowerCase())
@@ -37,7 +38,7 @@ class ConfiguratorWrapper(
 			))
 		}
 		instance.setCustomProperty("appsMap", appList)
-
+		instance.setCustomProperty("enumsType", enumsType)
 		instance.setCustomProperty("database",
 			DatabaseResolver.getByType(database)
 		)

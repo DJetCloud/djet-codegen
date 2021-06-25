@@ -59,6 +59,7 @@ class ProjectFilesCreator {
             "basePackage" to request.basePackage,
             "dbName" to request.dbName,
             "database" to request.database,
+			"enumsType" to request.enumsType,
 			"defaultStringSize" to request.defaultStringSize.toInt(),
             "addKotlin" to request.addKotlin,
             "dateLibrary" to request.dateLibrary,
