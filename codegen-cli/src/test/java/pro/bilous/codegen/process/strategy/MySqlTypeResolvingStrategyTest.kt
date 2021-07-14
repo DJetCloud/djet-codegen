@@ -7,6 +7,7 @@ import org.openapitools.codegen.CodegenProperty
 class MySqlTypeResolvingStrategyTest {
 
 	companion object {
+		const val DBASE_NAME = "mysql"
 		const val MAX_SIZE_FOR_VARCHAR = 21844
 		const val DEFAULT_STRING_SIZE = 700
 		const val PROPERTY_MAX_LENGTH = 333
@@ -19,7 +20,7 @@ class MySqlTypeResolvingStrategyTest {
 		val property = getProperty()
 		property.maxLength = PROPERTY_MAX_LENGTH
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
 		kotlin.test.assertEquals("VARCHAR(${PROPERTY_MAX_LENGTH})", ve["columnType"])
@@ -27,15 +28,15 @@ class MySqlTypeResolvingStrategyTest {
 	}
 
 	@Test
-	@DisplayName("Should assign TEXT if property.maxLength is greter then MAX_SIZE_FOR_VARCHAR")
+	@DisplayName("Should assign TEXT if property.maxLength is greater then MAX_SIZE_FOR_VARCHAR")
 	fun `should assign TEXT if property maxLength is greater then MAX_SIZE_FOR_VARCHAR`() {
 		val property = getProperty()
 		property.maxLength = MAX_SIZE_FOR_VARCHAR * 2
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
-		kotlin.test.assertEquals("TEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TEXT_TYPE}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -47,7 +48,7 @@ class MySqlTypeResolvingStrategyTest {
 	fun `should assign VARCHAR with default string size`() {
 		val property = getProperty()
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
 		kotlin.test.assertEquals("VARCHAR(${DEFAULT_STRING_SIZE})", ve["columnType"])
@@ -62,10 +63,10 @@ class MySqlTypeResolvingStrategyTest {
 	fun `should assign TEXT when default string size is greater then MAX_SIZE_FOR_VARCHAR`() {
 		val property = getProperty()
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, MAX_SIZE_FOR_VARCHAR * 2)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, MAX_SIZE_FOR_VARCHAR * 2)
 
 		val ve = property.vendorExtensions
-		kotlin.test.assertEquals("TEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TEXT_TYPE}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -79,9 +80,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "TINYBLOB"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("TINYBLOB", ve["columnType"])
+		kotlin.test.assertEquals("\${TINYBLOB_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -95,9 +96,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "TEXT"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("TEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TEXT_TYPE}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -111,9 +112,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "TINYTEXT"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("TINYTEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TINYTEXT_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -127,9 +128,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "BLOB"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("BLOB", ve["columnType"])
+		kotlin.test.assertEquals("\${BLOB_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -143,9 +144,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "MEDIUMBLOB"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("MEDIUMBLOB", ve["columnType"])
+		kotlin.test.assertEquals("\${MEDIUMBLOB_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -159,9 +160,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "MEDIUMTEXT"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("MEDIUMTEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${MEDIUMTEXT_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -175,9 +176,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "LONGBLOB"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("LONGBLOB", ve["columnType"])
+		kotlin.test.assertEquals("\${LONGBLOB_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -191,9 +192,9 @@ class MySqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "LONGTEXT"
 
-		MySqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		MySqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("LONGTEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${LONGTEXT_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 

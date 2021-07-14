@@ -3,8 +3,8 @@ package pro.bilous.codegen.process.strategy
 object PostgreSqlTypeResolvingStrategy : DefaultTypeResolvingStrategy() {
 
 	private val DATA_TYPES = mapOf(
-		"VARCHAR" to "varchar",
-		"TEXT" to "text",
+		"VARCHAR" to ColumnTypePare("\${VARCHAR_OBJECT}", "varchar"),
+		"TEXT" to ColumnTypePare("\${TEXT_TYPE}", "text"),
 	)
 
 	private const val MAX_SIZE_FOR_VARCHAR = 10485760
@@ -13,17 +13,12 @@ object PostgreSqlTypeResolvingStrategy : DefaultTypeResolvingStrategy() {
 		return if (size <= MAX_SIZE_FOR_VARCHAR) {
 			ColumnTypePare("VARCHAR(${size})", null)
 		} else {
-			ColumnTypePare("TEXT", DATA_TYPES["TEXT"])
+			DATA_TYPES["TEXT"]!!
 		}
 	}
 
 	override fun resolveStringTypeWithFormat(format: String): ColumnTypePare? {
 		val columnType = format.trim().toUpperCase()
-		val columnDefinition = DATA_TYPES[columnType]
-		return if (columnDefinition != null) {
-			ColumnTypePare(columnType, columnDefinition)
-		} else {
-			null
-		}
+		return DATA_TYPES[columnType]
 	}
 }

@@ -15,7 +15,7 @@ class FromModelProcessor(val codegen: CodeCodegen) {
 	fun process(codegenModel: CodegenModel): CodegenModel {
 		removeIgnoredFields(codegenModel)
 
-		applyStrategyResolver(ModelStrategyResolver(codegenModel))
+		applyStrategyResolver(ModelStrategyResolver(codegenModel, codegen))
 
 		fixEnumName(codegenModel)
 

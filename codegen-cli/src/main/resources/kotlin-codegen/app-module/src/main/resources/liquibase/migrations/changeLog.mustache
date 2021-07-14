@@ -27,8 +27,8 @@
 			</column>
 			{{/vendorExtensions.addEntityIdVar}}
 			{{#vendorExtensions.hasTableEntity}}
-			<column name="name" type="VARCHAR(255)"/>
-			<column name="description" type="VARCHAR(4096)"/>
+			<column name="name" type="{{vendorExtensions.identityNameType}}{{^vendorExtensions.identityNameType}}VARCHAR(255){{/vendorExtensions.identityNameType}}"/>
+			<column name="description" type="{{vendorExtensions.identityDescriptionType}}{{^vendorExtensions.identityDescriptionType}}VARCHAR(510){{/vendorExtensions.identityDescriptionType}}"/>
 			{{/vendorExtensions.hasTableEntity}}
 			{{#allVars}}
 				{{#vendorExtensions.isExtends}}

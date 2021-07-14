@@ -7,6 +7,7 @@ import org.openapitools.codegen.CodegenProperty
 class PostgreSqlTypeResolvingStrategyTest {
 
 	companion object {
+		const val DBASE_NAME = "postgresql"
 		const val MAX_SIZE_FOR_VARCHAR = 10485760
 		const val DEFAULT_STRING_SIZE = 700
 		const val PROPERTY_MAX_LENGTH = 333
@@ -18,7 +19,7 @@ class PostgreSqlTypeResolvingStrategyTest {
 		val property = getProperty()
 		property.maxLength = PROPERTY_MAX_LENGTH
 
-		PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		PostgreSqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
 		kotlin.test.assertEquals("VARCHAR(${PROPERTY_MAX_LENGTH})", ve["columnType"])
@@ -31,10 +32,10 @@ class PostgreSqlTypeResolvingStrategyTest {
 		val property = getProperty()
 		property.maxLength = MAX_SIZE_FOR_VARCHAR * 2
 
-		PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		PostgreSqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
-		kotlin.test.assertEquals("TEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TEXT_TYPE}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -46,7 +47,7 @@ class PostgreSqlTypeResolvingStrategyTest {
 	fun `should assign VARCHAR with default string size`() {
 		val property = getProperty()
 
-		PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, DEFAULT_STRING_SIZE)
+		PostgreSqlTypeResolvingStrategy.resolve(DBASE_NAME, property, DEFAULT_STRING_SIZE)
 
 		val ve = property.vendorExtensions
 		kotlin.test.assertEquals("VARCHAR(${DEFAULT_STRING_SIZE})", ve["columnType"])
@@ -63,9 +64,9 @@ class PostgreSqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "VARCHAR"
 
-		PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		PostgreSqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("VARCHAR", ve["columnType"])
+		kotlin.test.assertEquals("\${VARCHAR_OBJECT}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 
@@ -79,9 +80,9 @@ class PostgreSqlTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		ve["x-format"] = "TEXT"
 
-		PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, null)
+		PostgreSqlTypeResolvingStrategy.resolve(DBASE_NAME, property, null)
 
-		kotlin.test.assertEquals("TEXT", ve["columnType"])
+		kotlin.test.assertEquals("\${TEXT_TYPE}", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
 	}
 

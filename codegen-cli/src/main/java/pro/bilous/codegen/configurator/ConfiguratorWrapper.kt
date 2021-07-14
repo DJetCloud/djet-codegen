@@ -1,6 +1,7 @@
 package pro.bilous.codegen.configurator
 
 import org.openapitools.codegen.ClientOptInput
+import org.openapitools.codegen.config.DynamicSettings
 import pro.bilous.codegen.core.ICustomConfigurator
 import pro.bilous.codegen.core.IGenerateInvoker
 import org.slf4j.LoggerFactory
@@ -22,8 +23,8 @@ class ConfiguratorWrapper(
 		}
 
 		val specDir = instance.getSpecCopyValue()
-		val basePackage =  settings.dynamicProperties["basePackage"].toString()
-		val database = settings.dynamicProperties["database"]?.toString() ?: "MySQL"
+		val basePackage = settings.dynamicProperties["basePackage"].toString()
+		val database = resolveDatabase(settings.dynamicProperties)
 
 		val system = settings.dynamicProperties["system"]!!.toString()
 		instance.setCustomProperty("systemLower", system.toLowerCase())
@@ -31,14 +32,17 @@ class ConfiguratorWrapper(
 
 		val appList = mutableListOf<Map<String, Any>>()
 		apps.forEachIndexed { index, name ->
-			appList.add(mapOf(
-				"name" to name,
-				"port" to (8040 + index).toString()
-			))
+			appList.add(
+				mapOf(
+					"name" to name,
+					"port" to (8040 + index).toString()
+				)
+			)
 		}
 		instance.setCustomProperty("appsMap", appList)
 
-		instance.setCustomProperty("database",
+		instance.setCustomProperty(
+			"database",
 			DatabaseResolver.getByType(database)
 		)
 		apps.forEachIndexed { index, appName ->
@@ -49,6 +53,15 @@ class ConfiguratorWrapper(
 				log.error("Failed generation for the app $appName", error)
 			}
 		}
+	}
+
+	private fun resolveDatabase(dynamicProperties: MutableMap<String, Any?>): String {
+		val databaseName = dynamicProperties["database"]?.toString() ?: return "MySQL"
+		when (databaseName.trim().toLowerCase()) {
+			"mysql" -> instance.setCustomProperty("isMySQL", true)
+			"postgresql" -> instance.setCustomProperty("isPostgreSQL", true)
+		}
+		return databaseName
 	}
 
 	private fun generateOne(args: GenerateArgs) {

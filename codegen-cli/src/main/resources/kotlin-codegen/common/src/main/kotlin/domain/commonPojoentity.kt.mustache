@@ -52,12 +52,12 @@
 			{{#vendorExtensions.isEmbedded}}
 				{{#vendorExtensions.embeddedComponent}}
 					{{#vars}}
-		AttributeOverride(name = "{{vendorExtensions.embeddedVarName}}", column = Column(name = "{{vendorExtensions.embeddedColumnName}}"{{#vendorExtensions.hasJsonType}}, columnDefinition = "json"{{/vendorExtensions.hasJsonType}})),
+		AttributeOverride(name = "{{vendorExtensions.embeddedVarName}}", column = Column(name = "{{vendorExtensions.embeddedColumnName}}"{{#vendorExtensions.hasJsonType}}, columnDefinition = "json"{{/vendorExtensions.hasJsonType}}{{^vendorExtensions.hasJsonType}}{{>app-module/src/main/kotlin/domain/columnDefinition}}{{/vendorExtensions.hasJsonType}})),
 					{{/vars}}
 				{{/vendorExtensions.embeddedComponent}}
 			{{/vendorExtensions.isEmbedded}}
 			{{^vendorExtensions.isEmbedded}}
-		AttributeOverride(name = "{{name}}", column = Column(name = "{{vendorExtensions.embeddedColumnName}}")),
+		AttributeOverride(name = "{{name}}", column = Column(name = "{{vendorExtensions.embeddedColumnName}}"{{#vendorExtensions.hasJsonType}}, columnDefinition = "json"{{/vendorExtensions.hasJsonType}}{{^vendorExtensions.hasJsonType}}{{>app-module/src/main/kotlin/domain/columnDefinition}}{{/vendorExtensions.hasJsonType}})),
 			{{/vendorExtensions.isEmbedded}}
 		{{/vars}}
 	)
@@ -100,7 +100,7 @@
 	@Column(name = "id", insertable = false, updatable = false)
 	{{/vendorExtensions.readOnlyColumn}}
 	{{^vendorExtensions.readOnlyColumn}}
-	@Column(name = "{{{vendorExtensions.escapedColumnName}}}")
+	@Column(name = "{{{vendorExtensions.escapedColumnName}}}{{>app-module/src/main/kotlin/domain/columnDefinition}}")
 	{{/vendorExtensions.readOnlyColumn}}
 	{{/vendorExtensions.isOneToOne}}
     {{/isArray}}

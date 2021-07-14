@@ -119,17 +119,8 @@ open class ModelPropertyProcessor(val codegen: CodeCodegen) {
 			return
 		}
 		val defaultStringSize = additionalProperties["defaultStringSize"]?.let { it as? Int }
-		when (additionalProperties["database"]?.let { it as? Database }?.name) {
-			"mysql" -> {
-				MySqlTypeResolvingStrategy.resolvePropertyType(property, defaultStringSize)
-			}
-			"postgresql" -> {
-				PostgreSqlTypeResolvingStrategy.resolvePropertyType(property, defaultStringSize)
-			}
-			else -> {
-				defaultTypeResolvingStrategy.resolvePropertyType(property, defaultStringSize)
-			}
-		}
+		val databaseName = additionalProperties["database"]?.let { it as? Database }?.name
+		defaultTypeResolvingStrategy.resolve(databaseName, property, defaultStringSize)
 	}
 
 	private fun addGuidAnnotation(property: CodegenProperty, model: CodegenModel) {

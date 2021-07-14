@@ -7,8 +7,28 @@
 
 	<property name="UUID" value="varchar(36)" dbms="{{database.name}},h2"/>
 	<property name="JSON_OBJECT" value="json" dbms="{{database.name}}"/>
-	<property name="JSON_OBJECT" value="varchar(2048)" dbms="h2"/>
+	<property name="JSON_OBJECT" value="varchar(4096)" dbms="h2"/>
 	<property name="BOOLEAN_VALUE" value="boolean" dbms="{{database.name}},h2"/>
 	<property name="TEXT_TYPE" value="text" dbms="{{database.name}}"/>
 	<property name="TEXT_TYPE" value="longvarchar" dbms="h2"/>
+	{{#isMySQL}}
+	<property name="TINYBLOB_OBJECT" value="tinyblob" dbms="mysql"/>
+	<property name="TINYBLOB_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="TINYTEXT_OBJECT" value="tinytext" dbms="mysql"/>
+	<property name="TINYTEXT_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="BLOB_OBJECT" value="blob" dbms="mysql"/>
+	<property name="BLOB_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="MEDIUMBLOB_OBJECT" value="mediumblob" dbms="mysql"/>
+	<property name="MEDIUMBLOB_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="MEDIUMTEXT_OBJECT" value="mediumtext" dbms="mysql"/>
+	<property name="MEDIUMTEXT_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="LONGBLOB_OBJECT" value="longblob" dbms="mysql"/>
+	<property name="LONGBLOB_OBJECT" value="longvarchar" dbms="h2"/>
+	<property name="LONGTEXT_OBJECT" value="longtext" dbms="mysql"/>
+	<property name="LONGTEXT_OBJECT" value="longvarchar" dbms="h2"/>
+	{{/isMySQL}}
+	{{#isPostgreSQL}}
+	<property name="VARCHAR_OBJECT" value="varchar" dbms="postgresql"/>
+	<property name="VARCHAR_OBJECT" value="longvarchar" dbms="h2"/>
+	{{/isPostgreSQL}}
 </databaseChangeLog>

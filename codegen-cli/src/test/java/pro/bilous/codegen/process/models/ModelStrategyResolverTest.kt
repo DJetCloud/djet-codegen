@@ -1,6 +1,11 @@
 package pro.bilous.codegen.process.models
 
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.ObjectSchema
+import io.swagger.v3.oas.models.media.Schema
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.openapitools.codegen.CodeCodegen
 import org.openapitools.codegen.CodegenModel
 import org.openapitools.codegen.CodegenProperty
 import kotlin.test.assertEquals
@@ -12,7 +17,7 @@ internal class ModelStrategyResolverTest {
 	@Test
 	fun `should build args with all false`() {
 		val model = CodegenModel()
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val args = resolver.buildArgs()
 
 		assertFalse(args.hasEntity)
@@ -30,7 +35,7 @@ internal class ModelStrategyResolverTest {
 				CodegenProperty().apply { name = "entity" }
 			)
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val args = resolver.buildArgs()
 
 		assertTrue(args.hasIdentity)
@@ -47,7 +52,7 @@ internal class ModelStrategyResolverTest {
 				name = "_extends"
 			})
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val args = resolver.buildArgs()
 
 		assertFalse(args.hasIdentity)
@@ -65,7 +70,7 @@ internal class ModelStrategyResolverTest {
 				name = "id"
 			})
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val args = resolver.buildArgs()
 
 		assertFalse(args.hasIdentity)
@@ -79,7 +84,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			imports = setOf("ApiModel", "JsonProperty", "Account")
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		resolver.cleanupImports()
 		assertEquals(1, model.imports.size)
 		assertEquals("Account", model.imports.first())
@@ -90,7 +95,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			name = "AccountParty"
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args()
 		resolver.addExtensions(testArgs)
 
@@ -108,7 +113,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			name = "BaseResource"
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args(hasIdentity = true, hasEntity = true)
 		resolver.addExtensions(testArgs)
 
@@ -124,7 +129,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			name = "Account"
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args(hasEntity = true)
 		resolver.resolveParent(testArgs)
 
@@ -138,7 +143,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			name = "Account"
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args(hasId = true)
 		resolver.resolveParent(testArgs)
 
@@ -152,7 +157,7 @@ internal class ModelStrategyResolverTest {
 		val model = CodegenModel().apply {
 			name = "Account"
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args(hasIdentity = true)
 		resolver.resolveParent(testArgs)
 
@@ -170,12 +175,45 @@ internal class ModelStrategyResolverTest {
 				complexType = "BaseResource"
 			})
 		}
-		val resolver = ModelStrategyResolver(model)
+		val resolver = ModelStrategyResolver(model, mockCodegen())
 		val testArgs = ModelStrategyResolver.Args(hasExtends = true)
 		resolver.resolveParent(testArgs)
 
 		assertEquals("BaseResource()", model.parent)
 		assertTrue(model.imports.contains("BaseResource"))
 		assertFalse(model.vendorExtensions.containsKey("hasTableEntity"))
+	}
+
+	@Test
+	@DisplayName("Should set types for Identity fields in resource table in database:" +
+			"type of 'name' VARCHAR(333), type of 'description' VARCHAR(4096) ")
+	fun `should set type VARCHAR(333) for 'name' and VARCHAR(4096) for 'description' fields`() {
+		val testDefaultStringSize = 333
+		val apiSchema = ObjectSchema().apply {
+			properties = mapOf()
+		}
+		val openApi = OpenAPI().apply {
+			schema("Identity", apiSchema)
+		}
+		val codegen = CodeCodegen().apply {
+			artifactId = "user"
+			setOpenAPI(openApi)
+			additionalProperties()["defaultStringSize"] = testDefaultStringSize
+		}
+		val model = CodegenModel().apply {
+			name = "Account"
+		}
+		val resolver = ModelStrategyResolver(model, codegen)
+		val testArgs = ModelStrategyResolver.Args(hasEntity = true)
+		resolver.resolveParent(testArgs)
+
+		assertEquals("VARCHAR(${testDefaultStringSize})", model.vendorExtensions["identityNameType"] as? String)
+		assertEquals("VARCHAR(4096)", model.vendorExtensions["identityDescriptionType"] as? String)
+	}
+
+	private fun mockCodegen() : CodeCodegen {
+		return CodeCodegen().apply {
+			artifactId = "user"
+		}
 	}
 }
