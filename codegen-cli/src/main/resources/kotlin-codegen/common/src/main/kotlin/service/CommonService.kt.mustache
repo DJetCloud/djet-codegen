@@ -1,5 +1,6 @@
 package {{basePackage}}.service
 
+import {{basePackage}}.controller.CommonFilter
 import {{basePackage}}.domain.BaseResource
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -14,4 +15,6 @@ interface CommonService<E: BaseResource> {
 	fun getAll(pageable: Pageable, query: String?): Page<E>
 	fun getByIds(ids: List<String>): List<E>
 	fun deleteAll(domains: List<E>)
+	fun getAll(pageable: Pageable, query: String?, filter: CommonFilter<E>): Page<E>
+	fun getById(id: String, filter: CommonFilter<E>): E?
 }

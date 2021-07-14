@@ -4,11 +4,13 @@ plugins {
 	kotlin("jvm")
 	kotlin("plugin.spring")
 	kotlin("plugin.jpa")
+	kotlin("kapt")
 }
 
 dependencies {
 	implementation(kotlin("stdlib-jdk8"))
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	kapt("org.hibernate:hibernate-jpamodelgen:5.4.30.Final")
 
 {{^springdoc}}
 	api("io.springfox:springfox-boot-starter:3.0.0")

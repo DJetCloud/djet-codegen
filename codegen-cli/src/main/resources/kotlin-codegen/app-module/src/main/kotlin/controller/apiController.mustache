@@ -2,6 +2,13 @@ package {{appPackage}}.controller
 
 {{#imports}}import {{import}}
 {{/imports}}
+{{#operations}}
+	{{#operation}}
+		{{#vendorExtensions.mustBuildFilterClass}}
+import {{appPackage}}.controller.filter.{{vendorExtensions.filterClassName}}
+		{{/vendorExtensions.mustBuildFilterClass}}
+	{{/operation}}
+{{/operations}}
 import {{appPackage}}.service.{{serviceClassname}}
 import {{appPackage}}.controller.api.{{classname}}
 import {{basePackage}}.controller.AbstractController

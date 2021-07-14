@@ -37,6 +37,7 @@ class DataCodeGenerator(private val specIndex: Int = 0) : InCodeGenerator() {
 
 		apiFiles["$appRoot/controller/api.mustache"] = "Api.kt"
 		apiFiles["$appRoot/controller/apiController.mustache"] = "Controller.kt"
+		apiFiles["$appRoot/controller/filter.mustache"] = "Filters.kt"
 
 		apiFiles["$appRoot/repository/repository.mustache"] = "Repository.kt"
 		apiFiles["$appRoot/service/service.mustache"] = "Service.kt"

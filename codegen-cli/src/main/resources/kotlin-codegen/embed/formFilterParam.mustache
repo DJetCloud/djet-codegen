@@ -1,0 +1,3 @@
+{{#vendorExtensions.hasFilters}}
+			val filter = {{vendorExtensions.filterClassName}}({{#vendorExtensions.filters}}{{filter}}{{#hasNext}}, {{/hasNext}}{{/vendorExtensions.filters}})
+{{/vendorExtensions.hasFilters}}

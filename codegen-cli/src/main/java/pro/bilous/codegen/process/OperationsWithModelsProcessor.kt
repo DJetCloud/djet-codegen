@@ -1,6 +1,7 @@
 package pro.bilous.codegen.process
 
 import org.openapitools.codegen.CodeCodegen
+import org.openapitools.codegen.CodegenModel
 import org.openapitools.codegen.CodegenOperation
 import org.openapitools.codegen.CodegenParameter
 import java.util.ArrayList
@@ -8,7 +9,7 @@ import java.util.ArrayList
 class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 
 	@Suppress("UNCHECKED_CAST")
-	fun postProcessOperationsWithModels(objs: MutableMap<String, Any>, allModels: List<Any>):  Map<String, Any> {
+	fun postProcessOperationsWithModels(objs: MutableMap<String, Any>, allModels: List<Any>): Map<String, Any> {
 		val operations = objs["operations"] as MutableMap<String, Any>
 		val ops = operations["operation"] as MutableList<CodegenOperation>
 		for (operation in ops) {
@@ -19,10 +20,11 @@ class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 						resp.code = "200"
 					}
 					doDataTypeAssignment(resp.dataType, object :
-                        DataTypeAssigner {
+						DataTypeAssigner {
 						override fun setReturnType(returnType: String) {
 							resp.dataType = returnType
 						}
+
 						override fun setReturnContainer(returnContainer: String) {
 							resp.containerType = returnContainer
 						}
@@ -31,10 +33,11 @@ class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 			}
 
 			doDataTypeAssignment(operation.returnType, object :
-                DataTypeAssigner {
+				DataTypeAssigner {
 				override fun setReturnType(returnType: String) {
 					operation.returnType = returnType
 				}
+
 				override fun setReturnContainer(returnContainer: String) {
 					operation.returnContainer = returnContainer
 				}
@@ -44,8 +47,51 @@ class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 			}
 		}
 		OperationAddon(codegen).populate(objs)
-
+		populateOperationsWithFilterOnHeaderParams(objs, ops, allModels)
 		return objs
+	}
+
+	private fun populateOperationsWithFilterOnHeaderParams(
+		objs: MutableMap<String, Any>,
+		ops: MutableList<CodegenOperation>,
+		allModels: List<Any>
+	) {
+		val returnType = objs["returnModelType"]
+		val model = allModels.map { (it as HashMap<String, Any>)["model"] as CodegenModel }
+			.find { it.name == returnType } ?: return
+
+		val filterClasses = HashSet<String>()
+		for (operation in ops) {
+			val filters = operation.allParams
+				.filter { param ->
+					param.isHeaderParam && model.vars.any {
+						it.name == param.baseName &&
+								it.datatypeWithEnum.removeSuffix("?") == param.dataType.removeSuffix("?")
+					}
+				}
+				.map {
+					val filter = HashMap<String, Any>()
+					filter["filter"] = it.baseName
+					filter["Filter"] = it.baseName.capitalize()
+					filter["dataType"] = it.dataType
+					filter["hasNext"] = true
+					filter
+				}
+			if (filters.isNotEmpty()) {
+				filters.first()["isFirst"] = true
+				filters.last()["hasNext"] = false
+				operation.vendorExtensions["hasFilters"] = true
+				operation.vendorExtensions["filters"] = filters
+
+				val filterNames = filters.map { it["Filter"] as String }.sorted()
+				val filterClassName = "${returnType}FilterOn${filterNames.joinToString("")}"
+				operation.vendorExtensions["filterClassName"] = filterClassName
+				if (!filterClasses.contains(filterClassName)) {
+					operation.vendorExtensions["mustBuildFilterClass"] = true
+					filterClasses.add(filterClassName)
+				}
+			}
+		}
 	}
 
 	/**
@@ -64,7 +110,9 @@ class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 		} else if (returnType.startsWith("Map")) {
 			val end = returnType.lastIndexOf(">")
 			if (end > 0) {
-				dataTypeAssigner.setReturnType(returnType.substring("Map<".length, end).split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1].trim { it <= ' ' })
+				dataTypeAssigner.setReturnType(
+					returnType.substring("Map<".length, end).split(",".toRegex()).dropLastWhile { it.isEmpty() }
+						.toTypedArray()[1].trim { it <= ' ' })
 				dataTypeAssigner.setReturnContainer("Map")
 			}
 		} else if (returnType.startsWith("Set")) {

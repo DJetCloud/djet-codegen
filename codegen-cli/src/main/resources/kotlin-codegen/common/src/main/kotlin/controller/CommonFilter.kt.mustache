@@ -1,0 +1,9 @@
+package {{basePackage}}.controller
+
+import {{basePackage}}.domain.BaseResource
+import org.springframework.data.jpa.domain.Specification
+
+interface CommonFilter<E : BaseResource> {
+	fun toSpecification() : Specification<E>
+	fun getQuery() : String
+}
