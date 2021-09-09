@@ -1,61 +1,100 @@
 package pro.bilous.difhub.load
 
-import pro.bilous.difhub.config.ConfigReader
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
+import pro.bilous.difhub.config.Config
 import java.net.SocketTimeoutException
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-class DefLoader {
+abstract class DefLoader(protected val username: String, protected val password: String) {
 	companion object {
-		var authHeader = "missing"
-		private val client = OkHttpClient.Builder()
-				.retryOnConnectionFailure(true)
-				.readTimeout(7, TimeUnit.SECONDS)
-				.build()
+		private val authTokens = ConcurrentHashMap<String, String>()
+		private const val MAX_LOAD_ATTEMPTS = 5
+
+		fun dropAuthTokens() {
+			authTokens.clear()
+		}
 	}
 
-	var loadAttempts = 0
 	fun load(path: String): String? {
-		val difhub = ConfigReader.loadConfig().difhub
-
-		val url = "${difhub.api}/$path"
-		val request = Request.Builder()
-				.url(url)
-				.addHeader("Authorization", authHeader)
-				.build()
-
-
-		val response = try {
-			client.newCall(request).execute()
-		} catch (e: SocketTimeoutException) {
-			if (loadAttempts < 5) {
-				Thread.sleep(3000)
-				println("Failed attempt to load: retry in 3 second.")
-				loadAttempts += 1
+		val url = getUrl(path)
+		val (code, result) = loadFromUrl(url) ?: return null
+		if (result != null) {
+			if (isUnauthorized(code, result)) {
+				println("User is unauthorized. Trying to authorize and load again url: $url")
+				authTokens[username] = getAuthToken()
+				//File("/difhub.auth").writeText(authHeader) //TODO  Exception in thread "main" java.lang.IllegalArgumentException: URI is not hierarchical
 				return load(path)
+			} else if (isNotFound(code, result)) {
+				println("Url is not found: $url")
+				return null
+			} else if (isForbidden(code, result)) {
+				println("User is authorized but access is forbidden for: $url")
+				return null
 			}
-			println("Max retry attempt to load reached: Load Failed.")
-			return null
+			println("Url is loaded: $url")
+		} else {
+			println("Url is not loaded: $url")
 		}
-		val result = response.body?.string()
-		if (result != null && isUnauthorized(response, result)) {
-			authHeader = TokenReader.readAuth()
-			//File("/difhub.auth").writeText(authHeader) //TODO  Exception in thread "main" java.lang.IllegalArgumentException: URI is not hierarchical
-			return load(path)
-		} else if (result != null && isNotFound(response, result)) {
-			return null
-		}
-		println("url loaded: $url")
 		return result
 	}
 
-	private fun isUnauthorized(response: Response, body: String): Boolean {
-		return response.code == 401 || body.contains("\"status\": 401")
+	private fun loadFromUrl(url: String): Pair<Int, String?>? {
+		val request = Request.Builder()
+			.url(url)
+			.addHeader("Authorization", authTokens.getOrPut(username) { getAuthToken() })
+			.build()
+
+		var loadAttempts = 0
+		while (loadAttempts++ < MAX_LOAD_ATTEMPTS) {
+			try {
+				return call(request)
+			} catch (e: SocketTimeoutException) {
+				Thread.sleep(3000)
+				println("Failed $loadAttempts attempt to load: retry in 3 seconds")
+			}
+		}
+		println("Max retry attempt to load is reached. Url is not loaded: $url")
+		return null
 	}
 
-	private fun isNotFound(response: Response, body: String): Boolean {
-		return response.code == 404 || body.contains("\"status\": 404")
+	private fun isUnauthorized(code: Int, body: String): Boolean {
+		return code == 401 || body.contains("\"status\": 401")
 	}
- }
+
+	private fun isNotFound(code: Int, body: String): Boolean {
+		return code == 404 || body.contains("\"status\": 404")
+	}
+
+	private fun isForbidden(code: Int, body: String): Boolean {
+		return code == 403 || body.contains("\"status\": 403")
+	}
+
+	protected abstract fun getUrl(path: String): String
+
+	protected abstract fun getAuthToken(): String
+
+	protected abstract fun call(request: Request): Pair<Int, String?>
+}
+
+class DifHubLoader(username: String, password: String, val config: Config) : DefLoader(username, password) {
+	companion object {
+		private val client = OkHttpClient.Builder()
+			.retryOnConnectionFailure(true)
+			.readTimeout(7, TimeUnit.SECONDS)
+			.build()
+	}
+
+	val api = config.difhub.api
+
+	override fun getUrl(path: String) = "$api/$path"
+
+	override fun getAuthToken() = TokenReader.readAuth(username, password)
+
+	override fun call(request: Request): Pair<Int, String?> {
+		val response = client.newCall(request).execute()
+		return Pair(response.code, response.body?.string())
+	}
+
+}

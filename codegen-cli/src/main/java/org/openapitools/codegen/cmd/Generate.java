@@ -40,7 +40,6 @@ import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applyInst
 import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applyLanguageSpecificPrimitivesCsvList;
 import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applyReservedWordsMappingsKvpList;
 import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applyServerVariablesKvpList;
-import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applySystemPropertiesKvpList;
 import static org.openapitools.codegen.config.CodegenConfiguratorUtils.applyTypeMappingsKvpList;
 
 /**
@@ -395,7 +394,6 @@ public class Generate implements Runnable {
 			configurator.setStrictSpecBehavior(strictSpecBehavior);
 		}
 
-		applySystemPropertiesKvpList(systemProperties, configurator);
 		applyInstantiationTypesKvpList(instantiationTypes, configurator);
 		applyImportMappingsKvpList(importMappings, configurator);
 		applyTypeMappingsKvpList(typeMappings, configurator);

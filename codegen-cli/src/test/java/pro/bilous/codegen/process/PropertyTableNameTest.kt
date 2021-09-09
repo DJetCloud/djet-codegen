@@ -18,7 +18,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = false
+			isArray = false
 		}
 
 		val (tableName, columnName, realTableName) = processor.readManyPropertyTableData(complexType, property)
@@ -37,7 +37,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = true
+			isArray = true
 		}
 
 		val (tableName, columnName, realTableName) = processor.readManyPropertyTableData("UserAddress", property)
@@ -53,7 +53,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = false
+			isArray = false
 		}
 
 		val (tableName, columnName, realTableName) = processor.readManyPropertyTableData("UserAddress", property)
@@ -69,7 +69,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "parties"
-			isListContainer = true
+			isArray = true
 		}
 
 		val (tableName, columnName, realTableName) = processor.readManyPropertyTableData("Party", property)
@@ -88,7 +88,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = false
+			isArray = false
 		}
 
 		val (tableName, columnName, realTableName) = processor.readSinglePropertyTableData(complexType, property)
@@ -107,7 +107,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = true
+			isArray = true
 		}
 
 		val (tableName, columnName, realTableName) = processor.readSinglePropertyTableData("UserAddress", property)
@@ -123,7 +123,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "address"
-			isListContainer = false
+			isArray = false
 		}
 
 		val (tableName, columnName, realTableName) = processor.readSinglePropertyTableData("UserAddress", property)
@@ -139,7 +139,7 @@ class PropertyTableNameTest {
 
 		val property = CodegenProperty().apply {
 			name = "parties"
-			isListContainer = true
+			isArray = true
 		}
 
 		val (tableName, columnName, realTableName) = processor.readSinglePropertyTableData("Party", property)

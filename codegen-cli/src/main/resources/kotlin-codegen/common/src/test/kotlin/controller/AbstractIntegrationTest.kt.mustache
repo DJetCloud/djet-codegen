@@ -31,6 +31,7 @@ abstract class AbstractIntegrationTest<E : BaseResource> : CommonIntegrationTest
 
 		return mockMvc.perform(get("$urlTemplate/{id}", id)
 				.accept(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk)
 				.andReturn()
 	}
 

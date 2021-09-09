@@ -33,8 +33,10 @@ class FileMerge {
 	}
 
 	fun mergeFileContent(existingContent: String, newContent: String, filename: String): String {
+		val resolvedExistingContent = resolveEndsOfLines(existingContent)
+		val resolvedNewContent = resolveEndsOfLines(newContent)
 		val dmp = diff_match_patch()
-		val diff = diffLines(newContent, existingContent, dmp)
+		val diff = diffLines(resolvedNewContent, resolvedExistingContent, dmp)
 		val injectPrefix = getMergePrefix(filename)
 
 		val codeDiff = diff.map { CodeDiff(it, it.operation) }
@@ -66,13 +68,17 @@ class FileMerge {
 
 		val diffsToApply = LinkedList(codeDiff.filter { !it.removeDiff }.map { it.diff })
 
-		val patch = dmp.patch_make(newContent, diffsToApply)
+		val patch = dmp.patch_make(resolvedNewContent, diffsToApply)
 
-		val result = dmp.patch_apply(patch, newContent)
+		val result = dmp.patch_apply(patch, resolvedNewContent)
 
 		val contentResult = result[0]
 		println(result[1])
 		return contentResult as String
+	}
+
+	private fun resolveEndsOfLines(text: String):String {
+		return text.replace("\r\n","\n")
 	}
 
 	private fun diffLines(text1: String, text2: String, dmp: diff_match_patch): LinkedList<diff_match_patch.Diff> {

@@ -5,7 +5,10 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FDJetCloud%2Fdjet-codegen.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FDJetCloud%2Fdjet-codegen?ref=badge_shield)
 
 # DJet Code Generation instrumentation.
-Set of tools for the integration with https://metucat.com (previously https://difhub.com). Contains API loader, codegen and IntelliJ Idea plugin. New features and instrumentation coming soon.
+DJet Cloud is an instument to simplify & sistematize building of Enterprise class systems.
+The mission of DJet – build development instrumentation to effectively design, generate, develop, & deploy microservice systems & modern web applications.
+
+We have integration with https://metucat.com which inlcudes API loader, codegen and IntelliJ Idea plugin. New features and instrumentation coming soon.
 
 Projects:
 1. openapi-load – API loader, connects to difhub.com, loads metadata of the selected system and converts it to the OpenAPI documents. 

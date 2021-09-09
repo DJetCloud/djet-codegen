@@ -93,8 +93,5 @@ class OperationsWithModelsProcessor(val codegen: CodeCodegen) {
 				allParams.add(p)
 			}
 		}
-		if (allParams.isNotEmpty()) {
-			allParams[allParams.size - 1].hasMore = false
-		}
 	}
 }

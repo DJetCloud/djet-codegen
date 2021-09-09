@@ -1,13 +1,19 @@
 package pro.bilous.codegen.process
 
 import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.whenever
+import io.swagger.v3.oas.models.Components
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.media.Schema
 import org.junit.jupiter.api.Test
+import org.openapitools.codegen.CodeCodegen
 import org.openapitools.codegen.CodegenModel
 import org.openapitools.codegen.CodegenOperation
 import org.openapitools.codegen.CodegenParameter
 import org.openapitools.codegen.CodegenProperty
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 internal class OperationAddonTest {
 
@@ -18,7 +24,7 @@ internal class OperationAddonTest {
 		val op = CodegenOperation().apply {
 			allParams = mutableListOf(CodegenParameter())
 			httpMethod = "get"
-			isListContainer = true
+			isArray = true
 		}
 		addon.fixOperationParams(op)
 
@@ -187,5 +193,44 @@ internal class OperationAddonTest {
 		}
 		addon.applyTestVars(model)
 		assertEquals("test string value", embeddedModel.vars[0].defaultValue)
+	}
+
+	@Test
+	fun `should set defaultValue and isBigDecimal for BigDecimal property`() {
+		val addon = OperationAddon(mock())
+		val property = CodegenProperty().apply {
+			name = "name1"
+			dataType = "BigDecimal"
+			defaultValue = null
+		}
+		val model = CodegenModel().apply {
+			vars = listOf(property)
+		}
+		addon.applyTestVars(model)
+		assertEquals(true, property.vendorExtensions["isBigDecimal"])
+		assertEquals("777.77.toBigDecimal()", property.defaultValue)
+	}
+
+	@Test
+	fun `should add test model`() {
+		val returnType = "Test"
+		val schemaOfReturnType = Schema<Any>()
+		val modelOfReturnType = CodegenModel()
+		val openApi = OpenAPI().apply {
+			components = Components().apply {
+				addSchemas(returnType, schemaOfReturnType)
+			}
+		}
+		val codegen: CodeCodegen = mock()
+		whenever(codegen.findOpenApi()).thenReturn(openApi)
+		whenever(codegen.fromModel(returnType, schemaOfReturnType)).thenReturn(modelOfReturnType)
+
+		val addon = OperationAddon(codegen)
+		val objs = HashMap<String, Any>()
+
+		addon.addTestModel(objs, returnType)
+
+		assertEquals(modelOfReturnType, objs["testModel"])
+		assertTrue(objs["hasTestModel"] as Boolean)
 	}
 }

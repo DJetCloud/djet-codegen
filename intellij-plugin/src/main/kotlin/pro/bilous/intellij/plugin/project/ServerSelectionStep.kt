@@ -7,28 +7,35 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.layout.panel
 import org.apache.commons.lang3.StringUtils
 import pro.bilous.difhub.config.ConfigReader
+import pro.bilous.difhub.load.DifHubLoader
+import pro.bilous.difhub.load.ModelLoader
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URLEncoder
 import javax.swing.JComponent
 
-class ServerSelectionStep(val moduleBuilder: ProjectModuleBuilder) : ModuleWizardStep() {
+class ServerSelectionStep(private val moduleBuilder: ProjectModuleBuilder) : ModuleWizardStep() {
 
     private val userField = JBTextField()
     private val passwordField = JBTextField()
-    private val textFieldWithHistory = TextFieldWithHistory()
+    private val organizationField = TextFieldWithHistory()
 
     val difhub = ConfigReader.loadConfig().difhub
 
     override fun updateDataModel() {
 		moduleBuilder.request.username = userField.text
 		moduleBuilder.request.password = passwordField.text
-		moduleBuilder.request.organization = textFieldWithHistory.text
-		writeCredentialsToProps()
+		moduleBuilder.request.organization = organizationField.text
+
+		val username = moduleBuilder.request.username ?: return
+		val password = moduleBuilder.request.password ?: return
+		val organization = moduleBuilder.request.organization
+		val config = ConfigReader.loadConfig(organization)
+		moduleBuilder.config = config
+		moduleBuilder.modelLoader = ModelLoader(DifHubLoader(username, password, config))
     }
 
     override fun getComponent(): JComponent {
-		loadCredentials()
         return panel {
             titledRow("DifHub Credentials") {
                 row {
@@ -44,11 +51,11 @@ class ServerSelectionStep(val moduleBuilder: ProjectModuleBuilder) : ModuleWizar
                     }
                 }.enabled = true
             }
-            titledRow("Configure DifHub organization") {
+            titledRow("Configure DifHub Organization") {
                 row {
                     cell {
                         label("Organization Name")
-                        textFieldWithHistory()
+                        organizationField()
                     }
                 }.enabled = true
             }
@@ -63,7 +70,7 @@ class ServerSelectionStep(val moduleBuilder: ProjectModuleBuilder) : ModuleWizar
             throw ConfigurationException("Password must be set")
         }
 
-        val serverUrl = "${difhub.api}/${URLEncoder.encode(textFieldWithHistory.text, "utf-8")}"
+        val serverUrl = "${difhub.api}/${URLEncoder.encode(organizationField.text, "utf-8")}"
 
         if (StringUtils.isEmpty(serverUrl)) {
             throw ConfigurationException("Organization Name must be set")
@@ -74,18 +81,6 @@ class ServerSelectionStep(val moduleBuilder: ProjectModuleBuilder) : ModuleWizar
         } catch (e: URISyntaxException) {
             throw ConfigurationException("Server URL must be a valid url")
         }
-    }
-
-	private fun loadCredentials() {
-		textFieldWithHistory.text = System.getProperty("DIFHUB_ORG_NAME", "")
-		userField.text = System.setProperty("DIFHUB_USERNAME", "")
-		passwordField.text = System.setProperty("DIFHUB_PASSWORD", "")
-	}
-
-    private fun writeCredentialsToProps() {
-        System.setProperty("DIFHUB_ORG_NAME", textFieldWithHistory.text)
-        System.setProperty("DIFHUB_USERNAME", userField.text)
-        System.setProperty("DIFHUB_PASSWORD", passwordField.text)
     }
 
 }

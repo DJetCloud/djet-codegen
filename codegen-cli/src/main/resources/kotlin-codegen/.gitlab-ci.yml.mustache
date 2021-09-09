@@ -6,6 +6,7 @@ stages:
   - deploy
 
 variables:
+  GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
   IMAGE_VERSION: {{imageVersion}}
 {{#codecov}}
   CODECOV_TOKEN: "{{{codecov}}}"
@@ -14,56 +15,75 @@ variables:
 test-system:
   stage: test
   script:
+    - set +e
+    - du -sh $CI_PROJECT_DIR/.gradle/wrapper
+    - du -sh $CI_PROJECT_DIR/.gradle/caches
+    - set -e
     - ./gradlew test
 {{#codecov}}
   after_script:
     - bash <(curl -s https://codecov.io/bash)
 {{/codecov}}
   cache:
-    key: "$CI_COMMIT_REF_NAME"
+    key: "$CI_PROJECT_NAME"
     paths:
       - build
     {{#appsLower}}
       - app-{{.}}/build
     {{/appsLower}}
-      - .gradle
+      - .gradle/wrapper/
+      - .gradle/caches/
 
 build-docker:
   stage: build
   script:
+    - set +e
+    - du -sh $CI_PROJECT_DIR/.gradle/wrapper
+    - du -sh $CI_PROJECT_DIR/.gradle/caches
+    - set -e
 {{#appsLower}}
     - ./gradlew app-{{.}}:jib -Djib.to.image=$CI_REGISTRY_IMAGE/{{.}}:$IMAGE_VERSION -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_REGISTRY_PASSWORD
 {{/appsLower}}
   only:
     - master
   cache:
-    key: "$CI_COMMIT_REF_NAME"
+    key: "$CI_PROJECT_NAME"
     policy: pull
     paths:
       - build
 {{#appsLower}}
       - app-{{.}}/build
 {{/appsLower}}
-      - .gradle
+      - .gradle/wrapper/
+      - .gradle/caches/
 
-deploy-kube:
+{{#deployment}}
+deploy-{{name}}:
+  {{#manual}}
+  when: manual
+  {{/manual}}
   image:
     name: lachlanevenson/k8s-kubectl:latest
     entrypoint: [ "/bin/sh", "-c" ]
   stage: deploy
   variables:
-    APISERVER: "https://kubernetes.default.svc"
-    SERVICEACCOUNT: "/var/run/secrets/kubernetes.io/serviceaccount"
+    APISERVER: "{{kubeApi}}"
   script:
-    - kubectl config set-cluster local --server=$APISERVER --certificate-authority=$SERVICEACCOUNT/ca.crt
-    - kubectl config set-credentials gitlab-ci --token=$KUBE_TOKEN
-    - kubectl config set-context local-ctx --cluster=local --namespace=default --user=gitlab-ci
-    - kubectl config use-context local-ctx
+    - kubectl config set-cluster {{name}} --server=$APISERVER
+    - kubectl config set-context {{name}} --cluster={{name}}
+    - kubectl config set-credentials {{name}}-user --token={{tokenVar}}
+    - kubectl config set-context {{name}} --user={{name}}-user
+    - kubectl config use-context {{name}}
     - kubectl config view
-    - kubectl apply -f ./kube
-    - kubectl get pods --namespace=default
-  environment:
-    name: integration
-    url: $AUTO_DEVOPS_DOMAIN
+    - kubectl apply -f ./kube/{{name}}{{#kubectlArgs}} {{kubectlArgs}}{{/kubectlArgs}}
+{{#secretFileVar}}
+    - kubectl apply -f {{secretFileVar}}{{#kubectlArgs}} {{kubectlArgs}}{{/kubectlArgs}}
+{{/secretFileVar}}
+    {{#appsLower}}
+    - kubectl apply -f ./kube/kube-{{.}}.yml{{#kubectlArgs}} {{kubectlArgs}}{{/kubectlArgs}}
+    {{/appsLower}}
+    - kubectl get pods --namespace=default{{#kubectlArgs}} {{kubectlArgs}}{{/kubectlArgs}}
   only:
     - master
+
+{{/deployment}}

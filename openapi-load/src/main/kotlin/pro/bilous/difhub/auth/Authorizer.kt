@@ -4,7 +4,7 @@ class Authorizer {
 
 	private val cognito = CognitoWrapper()
 
-	fun authToken(): String {
-		return cognito.login()
+	fun authToken(username: String, password: String): String {
+		return cognito.login(username, password)
 	}
 }

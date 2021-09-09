@@ -71,7 +71,7 @@
 	@Column(name = "{{vendorExtensions.columnName}}", columnDefinition = "json")
     {{/vendorExtensions.hasJsonType}}
     {{^vendorExtensions.hasJsonType}}
-    {{#isListContainer}}
+    {{#isArray}}
     {{#vendorExtensions.isReferenceElement}}
 	@ElementCollection(fetch = FetchType.EAGER)
 	@CollectionTable(
@@ -89,8 +89,8 @@
 			inverseJoinColumns = [JoinColumn(name = "{{vendorExtensions.inverseJoinColumnName}}", referencedColumnName = "id")]
 	)
     {{/vendorExtensions.isReferenceElement}}
-    {{/isListContainer}}
-    {{^isListContainer}}
+    {{/isArray}}
+    {{^isArray}}
 	{{#vendorExtensions.isOneToOne}}
 	@OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.EAGER{{#required}}, optional = false{{/required}})
 	@JoinColumn(name = "{{{vendorExtensions.escapedColumnName}}}", referencedColumnName = "id")
@@ -103,14 +103,14 @@
 	@Column(name = "{{{vendorExtensions.escapedColumnName}}}")
 	{{/vendorExtensions.readOnlyColumn}}
 	{{/vendorExtensions.isOneToOne}}
-    {{/isListContainer}}
+    {{/isArray}}
     {{/vendorExtensions.hasJsonType}}
     {{/vendorExtensions.isEmbedded}}
     {{#isContainer}}
-	var {{name}}: {{{datatypeWithEnum}}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{#hasMore}},{{/hasMore}}
+	var {{name}}: {{{datatypeWithEnum}}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{^-last}},{{/-last}}
     {{/isContainer}}
     {{^isContainer}}
-	var {{name}}: {{{datatypeWithEnum}}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{#hasMore}},{{/hasMore}}
+	var {{name}}: {{{datatypeWithEnum}}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{^-last}},{{/-last}}
     {{/isContainer}}
 
 {{/vars}}

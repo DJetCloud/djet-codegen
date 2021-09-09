@@ -34,4 +34,10 @@ internal class CodeCodegenTest {
 		assertFalse(result.imports.contains("List"))
 		assertFalse(result.imports.contains("Error"))
 	}
+
+	@Test
+	fun `print post process`() {
+		val gen = CodeCodegen()
+		gen.postProcess()
+	}
 }

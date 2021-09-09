@@ -6,7 +6,7 @@ object TokenReader {
 
 	private val authorizer = Authorizer()
 
-	fun readAuth(): String {
-		return "Bearer ${authorizer.authToken()}"
+	fun readAuth(username: String, password: String): String {
+		return "Bearer ${authorizer.authToken(username, password)}"
 	}
 }

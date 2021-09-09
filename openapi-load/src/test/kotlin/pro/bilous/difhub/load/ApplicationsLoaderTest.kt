@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import pro.bilous.difhub.config.Config
 import pro.bilous.difhub.config.DatasetStatus
 import pro.bilous.difhub.config.DifHub
-import pro.bilous.difhub.config.SystemSettings
 import pro.bilous.difhub.model.Identity
 import pro.bilous.difhub.model.Model
 import pro.bilous.difhub.model.Object
@@ -18,8 +17,8 @@ class ApplicationsLoaderTest {
 
 	@Test
 	fun `test applications load`() {
-		val loader = ApplicationsLoader()
 		val config = Config(DifHub("test", "test"))
+		config.system = "system"
 
 		val modelLoaderMock = mock<IModelLoader> {
 			on { loadModels(config.difhub.getApplicationsUrl("system")) } doReturn
@@ -33,8 +32,7 @@ class ApplicationsLoaderTest {
 							`object` = Object(usage = "Service")
 						),					)
 		}
-		loader.modelLoader = modelLoaderMock
-		loader.config = config
+		val loader = ApplicationsLoader(modelLoaderMock, config)
 		val apps = loader.loadAppBySystem("system")
 
 		assertTrue { apps.isNotEmpty() }
@@ -44,7 +42,6 @@ class ApplicationsLoaderTest {
 
 	@Test
 	fun `test applications load Service only`() {
-		val loader = ApplicationsLoader()
 		val config = Config(DifHub("test", "test"))
 
 		val modelLoaderMock = mock<IModelLoader> {
@@ -59,8 +56,7 @@ class ApplicationsLoaderTest {
 							`object` = Object(usage = "Service")
 						),					)
 		}
-		loader.modelLoader = modelLoaderMock
-		loader.config = config
+		val loader = ApplicationsLoader(modelLoaderMock, config)
 		val apps = loader.loadAppBySystem("system")
 
 		assertTrue { apps.isNotEmpty() }
@@ -69,8 +65,8 @@ class ApplicationsLoaderTest {
 
 	@Test
 	fun `load all application models`() {
-		val loader = ApplicationsLoader()
 		val config = Config(DifHub("test", "test"))
+		config.system = "system"
 
 		val modelLoaderMock = mock<IModelLoader> {
 			on { loadModels(config.difhub.getApplicationsUrl("system")) } doReturn
@@ -78,9 +74,8 @@ class ApplicationsLoaderTest {
 						Model(identity = Identity(name = "application1")),
 						Model(identity = Identity(name = "application2")),					)
 		}
-		loader.modelLoader = modelLoaderMock
-		loader.config = config
-		val apps = loader.loadAll("system") ?: throw IllegalArgumentException("should not return null")
+		val loader = ApplicationsLoader(modelLoaderMock, config)
+		val apps = loader.loadAll() ?: throw IllegalArgumentException("should not return null")
 
 		assertTrue { apps.isNotEmpty() }
 		assertEquals("application1", apps[0].identity.name)
@@ -89,16 +84,16 @@ class ApplicationsLoaderTest {
 
 	@Test
 	fun `load one application model`() {
-		val loader = ApplicationsLoader()
 		val config = Config(DifHub("test", "test"))
+		config.system = "system"
+		config.datasetStatus = DatasetStatus.APPROVED
 
 		val modelLoaderMock = mock<IModelLoader> {
-			on { loadModel(config.difhub.getApplicationUrl("system", "app"), SystemSettings("system", DatasetStatus.APPROVED)) } doReturn
+			on { loadModel(config.difhub.getApplicationUrl("system", "app"), DatasetStatus.APPROVED) } doReturn
 						Model(identity = Identity(name = "application1"))
 		}
-		loader.modelLoader = modelLoaderMock
-		loader.config = config
-		val app = loader.loadOne(SystemSettings("system", DatasetStatus.APPROVED), "app") ?: throw IllegalArgumentException("should not return null")
+		val loader = ApplicationsLoader(modelLoaderMock, config)
+		val app = loader.loadOne("app") ?: throw IllegalArgumentException("should not return null")
 
 		assertNotNull(app)
 		assertEquals("application1",app.identity.name)
@@ -106,16 +101,16 @@ class ApplicationsLoaderTest {
 
 	@Test
 	fun `load one application settings`() {
-		val loader = ApplicationsLoader()
 		val config = Config(DifHub("test", "test"))
+		config.system = "system"
+		config.datasetStatus = DatasetStatus.APPROVED
 
 		val modelLoaderMock = mock<IModelLoader> {
-			on { loadModel(config.difhub.getApplicationSettingsUrl("system", "app"), SystemSettings("system", DatasetStatus.APPROVED)) } doReturn
+			on { loadModel(config.difhub.getApplicationSettingsUrl("system", "app"), DatasetStatus.APPROVED) } doReturn
 					Model(identity = Identity(name = "settings1"))
 		}
-		loader.modelLoader = modelLoaderMock
-		loader.config = config
-		val settings = loader.loadAppSettings(SystemSettings("system", DatasetStatus.APPROVED), "app") ?: throw IllegalArgumentException("should not return null")
+		val loader = ApplicationsLoader(modelLoaderMock, config)
+		val settings = loader.loadAppSettings("app") ?: throw IllegalArgumentException("should not return null")
 
 		assertNotNull(settings)
 		assertEquals("settings1", settings.identity.name)

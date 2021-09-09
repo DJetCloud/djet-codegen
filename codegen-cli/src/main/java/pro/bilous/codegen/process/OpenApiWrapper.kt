@@ -5,15 +5,15 @@ import org.openapitools.codegen.CodeCodegen
 
 interface IOpenApiWrapper {
 	fun isOpenApiContainsType(complexType: String?): Boolean
-	fun findSchema(complexType: String?): Schema<*>
+	fun findSchema(complexType: String?): Schema<*>?
 }
 
 open class OpenApiWrapper(val codegen: CodeCodegen) : IOpenApiWrapper {
 	override fun isOpenApiContainsType(complexType: String?): Boolean {
-		return codegen.getOpenApi().components.schemas.containsKey(complexType)
+		return codegen.getOpenApi()?.components?.schemas?.containsKey(complexType) ?: false
 	}
 
-	override fun findSchema(complexType: String?): Schema<*> {
-		return codegen.getOpenApi().components.schemas[complexType] as Schema<*>
+	override fun findSchema(complexType: String?): Schema<*>? {
+		return codegen.getOpenApi()?.components?.schemas?.let { it[complexType] }
 	}
 }

@@ -1,21 +1,27 @@
 package pro.bilous.difhub.load
 
-import pro.bilous.difhub.config.ConfigReader
-import pro.bilous.difhub.config.SystemSettings
+import pro.bilous.difhub.config.Config
 import pro.bilous.difhub.model.Model
 
-class InterfacesLoader : IInterfacesLoader {
-	override fun load(systemSettings: SystemSettings, app: String): List<Model>? {
-		val difhub = ConfigReader.loadConfig().difhub
+class InterfacesLoader(val modelLoader: IModelLoader, val config: Config) : IInterfacesLoader {
 
-		val interfaceList =  ModelLoader(DefLoader()).loadModels(difhub.getInterfacesUrl(systemSettings.name, app))
+	private val difhub = config.difhub
+	private val system = config.system
+	private val datasetStatus = config.datasetStatus
 
-		val intefaces = mutableListOf<Model>()
+	override fun load(app: String): List<Model> {
+		val interfaceList =  modelLoader.loadModels(difhub.getInterfacesUrl(system, app))
+
+		val interfaces = mutableListOf<Model>()
 
 		interfaceList?.forEach {
-			val `interface` = ModelLoader(DefLoader()).loadModel(difhub.getInterfaceUrl(systemSettings.name, app, it.identity.name), systemSettings)!!
-			intefaces.add(`interface`)
+			val `interface` = modelLoader.loadModel(difhub.getInterfaceUrl(system, app, it.identity.name), datasetStatus)
+			if (`interface` != null) {
+				interfaces.add(`interface`)
+			} else {
+				println("Interface is not loaded: $it")
+			}
 		}
-		return intefaces
+		return interfaces
 	}
 }

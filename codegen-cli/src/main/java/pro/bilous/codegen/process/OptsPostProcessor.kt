@@ -6,6 +6,7 @@ import org.openapitools.codegen.CodeCodegen
 import org.openapitools.codegen.SupportingFile
 import org.openapitools.codegen.templating.mustache.CaseFormatLambda
 import org.openapitools.codegen.templating.mustache.LowercaseLambda
+import pro.bilous.codegen.process.deployment.DeploymentPostProcessor
 import java.io.File
 import java.util.regex.Matcher
 
@@ -42,6 +43,8 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 	private fun getServicesFolder(): String = codegen.servicesFolder
 	private fun getDatabaseFolder(): String = codegen.databaseFolder
 
+	private val deployment = DeploymentPostProcessor(codegen)
+
 	fun processOpts() {
 		// clear model and api doc template as this codegen
 		// does not support auto-generated markdown doc at the moment
@@ -51,6 +54,10 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 
 		if (additionalProperties.containsKey(CodeCodegen.DB_NAME)) {
 			codegen.dbName = additionalProperties[CodeCodegen.DB_NAME] as String
+		}
+
+		if (additionalProperties.containsKey(CodeCodegen.ENUM_TYPE)) {
+			codegen.enumType = additionalProperties[CodeCodegen.ENUM_TYPE] as String
 		}
 
 		if (additionalProperties.containsKey(CodeCodegen.TITLE)) {
@@ -185,11 +192,7 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 			target = "gradle/wrapper/gradle-wrapper.jar"
 		)
 
-		addSupportFile(
-			source = ".gitlab-ci.yml.mustache",
-			target = ".gitlab-ci.yml",
-			condition = cicdEnabled()
-		)
+		deployment.addSystemFiles()
 	}
 
 	private fun addCommonModuleFiles() {
@@ -235,18 +238,6 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 			addSupportFile(source = "$inputSrc/enumdefinition/EnumDefinitionService.kt.mustache", folder = "$destSrc/enumdefinition", target = "EnumDefinitionService.kt")
 			addSupportFile(source = "$inputSrc/enumdefinition/EnumValue.kt.mustache", folder = "$destSrc/enumdefinition", target = "EnumValue.kt")
 		}
-
-		// add kubernetes ConfigMap manifest to the application
-		addSupportFile(
-			source = "kube/configmap.yml.mustache",
-			target = "kube/configmap.yml",
-			condition = cicdEnabled()
-		)
-		addSupportFile(
-			source = "kube/deploy.md.mustache",
-			target = "kube/deploy.md",
-			condition = cicdEnabled()
-		)
 	}
 
 	private fun setupModuleFiles() {
@@ -254,16 +245,13 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 		val destinationRoot = "app-${artifactId.toLowerCase()}"
 		addSupportFile(source = "$inputRoot/build.gradle.kts.mustache",  target = "$destinationRoot/build.gradle.kts")
 		// add kubernetes manifests for the application
-		addSupportFile(
-			source = "kube/kube-app.yml.mustache",
-			target = "kube/kube-${artifactId.toLowerCase()}.yml",
-			condition = cicdEnabled()
-		)
+		deployment.addAppFiles(artifactId)
 	}
 
 	private fun setupRawFiles() {
 		addSupportFile(source = "raw/_gitignore", target = ".gitignore")
 		addSupportFile(source = "raw/_editorconfig", target = ".editorconfig")
+		addSupportFile(source = "raw/_gradle_properties", target = "gradle.properties")
 	}
 
 	private fun setupIdeaFiles() {
@@ -275,8 +263,6 @@ class OptsPostProcessor(val codegen: CodeCodegen) {
 			supportingFiles.add(SupportingFile(source, folder.replace(".", File.separator), target))
 		}
 	}
-
-	private fun cicdEnabled() = additionalProperties.containsKey("cicd") && additionalProperties["cicd"] as Boolean
 
 	private fun isAuthorizationEnabled(): Boolean {
 		return true == additionalProperties.get(CodeCodegen.AUTHORIZATION_ENABLED) as Boolean?

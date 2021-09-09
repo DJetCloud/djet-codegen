@@ -2,6 +2,8 @@ package pro.bilous.codegen.process.filename
 
 import org.slf4j.LoggerFactory
 import java.io.File
+import org.openapitools.codegen.CodeCodegen
+import pro.bilous.codegen.process.deployment.DeploymentFileResolver
 
 class FilePathResolver {
 
@@ -32,10 +34,11 @@ class FilePathResolver {
 	 * 			example /Users/bilous/Projects/IN/client-system/app-folder/src/main/kotlin/app/client/user/domain/Binding.kt
 	 * @return path to the file
 	 */
-	fun resolve(templateData: Map<String, Any>, templateName: String, filePath: String): ResultArgs {
+	fun resolve(templateData: Map<String, Any>, templateName: String, sourceFilePath: String): ResultArgs {
 		// we push all files having templates starting with common/ to common destination
 
 		val isCommonModel = isCommonModel(templateData)
+		val filePath = resolveFilePath(sourceFilePath)
 
 		return when (templateName) {
 			"common/src/main/kotlin/domain/commonEntity.mustache" -> {
@@ -49,6 +52,12 @@ class FilePathResolver {
 			}
 			else -> ResultArgs(filePath, !isCommonModel)
 		}
+	}
+	/** Remove trailing dashes added for tests generation overwrite
+	 * see why **[CodeCodegen.apiTestFilename]**
+	 **/
+	private fun resolveFilePath(source: String): String {
+		return source.removeSuffix("__")
 	}
 
 	private fun resolveCommon(templateData: Map<String, Any>, templateName: String, filePath: String): String {

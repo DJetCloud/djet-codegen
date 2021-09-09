@@ -1,7 +1,6 @@
 package pro.bilous.difhub.convert
 
 import io.swagger.v3.core.util.PrimitiveType
-import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.oas.models.Operation
 import io.swagger.v3.oas.models.PathItem
 import io.swagger.v3.oas.models.media.ArraySchema
@@ -22,53 +21,54 @@ import pro.bilous.difhub.model.OperationsItem
 import pro.bilous.difhub.model.ParametersItem
 import pro.bilous.difhub.model.ResponsesItem
 
-class InterfaceToPathConverter(private val source: Model, private val openApi: OpenAPI) {
+class InterfaceConverter(private val source: Model) {
 
-	val pathModelsToLoad = mutableMapOf<String , String>()
+	val pathModels = mutableMapOf<String, String>()
 	val parameters = mutableMapOf<String, Parameter>()
+	val requestBodies = mutableMapOf<String, RequestBody>()
+	val paths = mutableMapOf<String, PathItem>()
 
+	private val pathRegisteredParams = mutableListOf<String>()
 	private val sourcePath = source.path.replace("\u200B", "")
 
-	fun convert(): Map<String, PathItem> {
-
-		val paths = mutableMapOf<String, PathItem>()
-
+	fun convert() {
 		val path = PathItem()
 
 		source.parameters?.forEach {
-			// fix issue with difhub model.
-
-			var location = it.location
-			if(sourcePath.contains("{${it.field!!.identity.name}}")) {
-				location = "Path"
-			}
-			val identityName = it.field.identity.name;
-			var param: Parameter? = null
-			if (location == "Body") {
-				val body = createBodyParameter(it)
-				openApi.components.addRequestBodies(identityName, body)
-			} else {
-				param = when(location) {
-					"Header" -> createHeaderParameter(it)
-					"Path" -> createPathParameter(it)
-					"Query" -> createQueryParameter(it)
-					//"Body" -> createBodyParameter(it)
-					else -> throw IllegalStateException()
-				}
-			}
-			if (param != null) {
-				parameters[param.name] = param
-			}
+			addRequestBodyOrParameter(it)
 		}
 		source.operations?.forEach {
 			addOperation(it, path)
 		}
 		paths[sourcePath] = path
-		postProcessOperations(paths)
-		return paths
+		postProcessOperations()
 	}
 
-	private fun postProcessOperations(paths: MutableMap<String, PathItem>) {
+	private fun addRequestBodyOrParameter(item: ParametersItem) {
+		val identityName = item.field!!.identity.name
+		val location = if (sourcePath.contains("{${identityName}}")) {
+			"Path"
+		} else {
+			item.location
+		}
+
+		if (location == "Body") {
+			requestBodies[identityName] = createRequestBody(item)
+		} else {
+			val param = when(location) {
+				"Header" -> createHeaderParameter(item)
+				"Path" -> createPathParameter(item)
+				"Query" -> createQueryParameter(item)
+				else -> throw IllegalStateException("Location '$location' of interface parameter is invalid")
+			}
+			val supportedParam = !identityName.startsWith("_") && location != "Header"
+			if (supportedParam) {
+				parameters[param.name] = param
+			}
+		}
+	}
+
+	private fun postProcessOperations() {
 		if (!sourcePath.endsWith("}")) {
 			return
 		}
@@ -172,12 +172,18 @@ class InterfaceToPathConverter(private val source: Model, private val openApi: O
 		path.operation(PathItem.HttpMethod.valueOf(item.action.toUpperCase()), op)
 	}
 
-	private val pathRegisteredParams = mutableListOf<String>()
 	private fun addParameter(paramSource: ParametersItem, op: Operation, path: PathItem) {
 		val param = createParameter(paramSource)
 
 		val sourceParam = findParameter(paramSource.name) ?: return
-
+		if (sourceParam.location == "Header") {
+			// Header parameters not supported
+			return
+		}
+		if (sourceParam.name.startsWith("_")) {
+			// Underscore hides parameter from code generation
+			return
+		}
 		if (sourceParam.location == "Body") {
 			op.requestBody(RequestBody().`$ref`(paramSource.name))
 			return
@@ -238,7 +244,6 @@ class InterfaceToPathConverter(private val source: Model, private val openApi: O
 		}
 	}
 
-
 	private fun createQueryParameter(item: ParametersItem): Parameter {
 		val param = QueryParameter()
 		item.field!!
@@ -252,7 +257,7 @@ class InterfaceToPathConverter(private val source: Model, private val openApi: O
 		return param
 	}
 
-	private fun createBodyParameter(item: ParametersItem): RequestBody {
+	private fun createRequestBody(item: ParametersItem): RequestBody {
 		val param = RequestBody()
 		item.field!!
 		//param.name = item.field.identity.name
@@ -270,7 +275,7 @@ class InterfaceToPathConverter(private val source: Model, private val openApi: O
 
 		if ("Structure" == item.field.type) {
 			response.content(createContent(item.field))
-			pathModelsToLoad[getDefType(item.field.reference)] = item.field.reference
+			pathModels[getDefType(item.field.reference)] = item.field.reference
 		}
 
 		return Pair(item.code, response)

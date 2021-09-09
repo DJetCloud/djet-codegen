@@ -1,18 +1,17 @@
 plugins {
-	kotlin("jvm") version "1.4.0"
-	id("org.jetbrains.intellij") version "0.7.3" apply false
-	id("org.jetbrains.gradle.plugin.idea-ext") version "0.7" apply false
+	kotlin("jvm") version "1.5.10"
+	id("org.jetbrains.intellij") version "1.0" apply false
+	id("org.jetbrains.gradle.plugin.idea-ext") version "1.0" apply false
 	jacoco
 }
 
 group = "cloud.djet"
-version = "1.0.0-SNAPSHOT"
+version = "1.0.0"
 
 allprojects {
 	repositories {
 		mavenLocal()
 		mavenCentral()
-		jcenter()
 	}
 	tasks.withType<JavaCompile> {
 		sourceCompatibility = "1.8"
@@ -43,7 +42,7 @@ subprojects {
 	apply(plugin = "jacoco")
 
 	jacoco {
-		toolVersion = "0.8.5"
+		toolVersion = "0.8.7"
 	}
 
 	tasks.jacocoTestReport {

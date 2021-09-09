@@ -9,8 +9,7 @@ import com.nhaarman.mockitokotlin2.whenever
 import io.swagger.util.Json
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import pro.bilous.difhub.config.DatasetStatus
-import pro.bilous.difhub.config.SystemSettings
+import pro.bilous.difhub.config.ConfigReader
 import pro.bilous.difhub.load.ApplicationsLoader
 import pro.bilous.difhub.load.IModelLoader
 import pro.bilous.difhub.model.Model
@@ -50,13 +49,12 @@ internal class DifHubToSwaggerConverterTest {
 	@Test
 	fun `should convert to app`() {
 		val mockModelLoader: IModelLoader = mock()
+		val config = ConfigReader.loadConfig()
 		whenever(mockModelLoader.loadModel(any(), any())).thenReturn(readValue(appJson))
 
-		val appLoader = ApplicationsLoader().apply {
-			modelLoader = mockModelLoader
-		}
+		val appLoader = ApplicationsLoader(mockModelLoader, config)
 
-		val converter = DifHubToSwaggerConverter(SystemSettings("system", DatasetStatus.APPROVED))
+		val converter = DifHubToSwaggerConverter(mockModelLoader, config)
 		converter.appLoader = appLoader
 		converter.datasetsLoader = mock()
 		converter.interfacesLoader = mock()
@@ -69,7 +67,7 @@ internal class DifHubToSwaggerConverterTest {
 
 	private fun readValue(jsonText: String): Model {
 		Json.mapper().registerKotlinModule()
-		return Json.mapper().readValue(appJson)
+		return Json.mapper().readValue(jsonText)
 	}
 
 	private inline fun <reified T> ObjectMapper.readValue(json: String): T

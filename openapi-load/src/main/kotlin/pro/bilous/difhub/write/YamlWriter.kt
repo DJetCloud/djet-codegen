@@ -1,6 +1,5 @@
 package pro.bilous.difhub.write
 
-import io.swagger.v3.core.util.Yaml
 import io.swagger.v3.oas.models.OpenAPI
 import java.io.File
 
@@ -10,7 +9,7 @@ class YamlWriter(private val apiName: String) {
 		const val ANSI_GREEN = "\u001B[32m"
 	}
 
-	private val writer = Yaml.mapper().writerWithDefaultPrettyPrinter()
+	private val writer = YamlMapperFactory().createYaml()
 
 	fun write(openApi: OpenAPI) {
 		val outFolder = System.getenv("OUT_FOLDER") ?: "./codegen-cli/.test"
@@ -34,7 +33,8 @@ class YamlWriter(private val apiName: String) {
 		}
 		val targetFilePath = "$folderPath/$fileName.yaml"
 		File(targetFilePath).bufferedWriter().use {
-			out -> out.write(yamlText)
+			it.write(yamlText)
+			it.flush()
 		}
 		print("YAML file successfully written to $targetFilePath")
 	}

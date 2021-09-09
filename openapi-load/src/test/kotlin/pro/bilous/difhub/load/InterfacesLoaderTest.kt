@@ -1,11 +1,13 @@
 package pro.bilous.difhub.load
 
-import pro.bilous.difhub.config.DatasetStatus
-import pro.bilous.difhub.config.SystemSettings
+import com.nhaarman.mockitokotlin2.mock
+import pro.bilous.difhub.config.ConfigReader
 
 class InterfacesLoaderTest {
 }
 
 fun main() {
-	InterfacesLoader().load(SystemSettings("Customer", DatasetStatus.APPROVED), "Product")
+	val mockModelLoader: IModelLoader = mock()
+	val config = ConfigReader.loadConfig()
+	InterfacesLoader(mockModelLoader, config).load("Product")
 }

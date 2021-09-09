@@ -7,7 +7,7 @@ class CommonModelsProcessor(val properties: MutableMap<String, Any>) {
 
 	companion object {
 		private val commonModelNames = listOf(
-			"Identity", "Entity", "History", "Binding", "ResourceEntity"
+			"Identity", "Entity", "History", "Binding", "ResourceEntity", "Element"
 		)
 	}
 

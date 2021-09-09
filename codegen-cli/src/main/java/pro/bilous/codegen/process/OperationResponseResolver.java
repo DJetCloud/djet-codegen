@@ -45,7 +45,7 @@ public class OperationResponseResolver {
 				CodegenProperty innerProperty = codeCodegen.fromProperty("response", as.getItems());
 				op.returnBaseType = innerProperty.baseType;
 			} else if (ModelUtils.isMapSchema(responseSchema)) {
-				CodegenProperty innerProperty = codeCodegen.fromProperty("response", ModelUtils.getAdditionalProperties(responseSchema));
+				CodegenProperty innerProperty = codeCodegen.fromProperty("response", ModelUtils.getAdditionalProperties(openAPI, responseSchema));
 				op.returnBaseType = innerProperty.baseType;
 			} else {
 				if (cm.complexType != null) {
@@ -77,11 +77,11 @@ public class OperationResponseResolver {
 			if (cm.isContainer) {
 				op.returnContainer = cm.containerType;
 				if ("map".equals(cm.containerType)) {
-					op.isMapContainer = true;
+					op.isMap = true;
 				} else if ("list".equalsIgnoreCase(cm.containerType)) {
-					op.isListContainer = true;
+					op.isArray = true;
 				} else if ("array".equalsIgnoreCase(cm.containerType)) {
-					op.isListContainer = true;
+					op.isArray = true;
 				}
 			} else {
 				op.returnSimpleType = true;

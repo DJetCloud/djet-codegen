@@ -8,7 +8,7 @@ class EnumConverter(private val source: Model) {
 
 	fun convert(): EnumModel {
 		val nameOrder = findField(usage = "name")?.order ?: 1
-		val descOrder = findField(usage = "description")?.order ?: 2
+		val descOrder = findField(usage = "description")?.order ?: -1
 		val valueOrder = findField(usage = "value")?.order ?: findField(usage = "code")?.order ?: 3
 
 		val entries = mutableSetOf<EnumEntry>()
@@ -25,7 +25,7 @@ class EnumConverter(private val source: Model) {
 	}
 
 	private fun getFieldValue(recordsItem: RecordsItem, order: Int): String? {
-		return if (recordsItem.values != null && recordsItem.values.size >= order) {
+		return if (recordsItem.values != null && order > 0 && recordsItem.values.size >= order) {
 			normalizeValue(recordsItem.values[order - 1])
 		} else null
 	}

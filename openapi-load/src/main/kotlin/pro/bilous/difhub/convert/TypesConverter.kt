@@ -10,7 +10,7 @@ object TypesConverter {
 			"Reference" to Type("string", "reference"),
 			"String" to Type("string"),
 			"Guid" to Type("string", "uuid"),
-			"Decimal" to Type("number", "decimal"),
+			"Decimal" to Type("number"),
 			"Integer" to Type("integer"),
 			"Short" to Type("integer", "short"),
 			"DateTime" to Type("string", "date-time"),

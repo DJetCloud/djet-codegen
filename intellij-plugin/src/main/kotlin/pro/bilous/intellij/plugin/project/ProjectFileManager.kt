@@ -14,7 +14,6 @@ class ProjectFileManager {
 		val request = ProjectCreationRequest().apply {
 			username = "add DifHub username"
 			password = "add DifHub password"
-			organization = "add DifHub organization name"
 		}
 		fileCreator.createCredentialsFile(request, configFolder)
 
@@ -26,6 +25,7 @@ class ProjectFileManager {
 
 	fun createAndOpenProjectSettings(configFolder: String, project: Project) {
 		val request = ProjectCreationRequest().apply {
+			organization = "add DifHub organization name"
 			system = "add DifHub system"
 			applications = mutableSetOf("add system application")
 			groupId = "add group id"

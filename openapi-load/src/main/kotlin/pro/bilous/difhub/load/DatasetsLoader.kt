@@ -1,14 +1,16 @@
 package pro.bilous.difhub.load
 
-import pro.bilous.difhub.config.ConfigReader
-import pro.bilous.difhub.config.SystemSettings
+import pro.bilous.difhub.config.Config
 import pro.bilous.difhub.model.Model
 
-class DatasetsLoader : IDatasetsLoader {
-	override fun load(systemSettings: SystemSettings, app: String, type: String?): List<Model> {
-		val difhub = ConfigReader.loadConfig().difhub
-		val datasetList =
-			ModelLoader(DefLoader()).loadModels(difhub.getDatasetsUrl(systemSettings.name, app))!!
+class DatasetsLoader(val modelLoader: IModelLoader, val config: Config) : IDatasetsLoader {
+
+	private val difhub = config.difhub
+	private val system = config.system
+	private val datasetStatus = config.datasetStatus
+
+	override fun load(app: String, type: String?): List<Model> {
+		val datasetList = modelLoader.loadModels(difhub.getDatasetsUrl(system, app))!!
 
 		val datasets = mutableListOf<Model>()
 
@@ -23,11 +25,11 @@ class DatasetsLoader : IDatasetsLoader {
 			.filter { it.`object` != null && allowedTypes.contains(it.`object`.usage) }
 			.forEach {
 
-				val url = difhub.getDatasetTypeUrl(systemSettings.name, app, it.identity.name)
+				val url = difhub.getDatasetTypeUrl(system, app, it.identity.name)
 //					if (it.version != null) {
 //						url = "$url/versions/${it.version.major}.${it.version.minor}.${it.version.revision}"
 //					}
-				val dataset = ModelLoader(DefLoader()).loadModel(url, systemSettings)!!
+				val dataset = modelLoader.loadModel(url, datasetStatus)!!
 				datasets.add(dataset)
 			}
 		return datasets

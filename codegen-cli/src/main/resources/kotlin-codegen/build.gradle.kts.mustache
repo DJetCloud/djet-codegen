@@ -2,19 +2,19 @@ import io.gitlab.arturbosch.detekt.detekt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	val kotlinVersion = "1.4.21"
+	val kotlinVersion = "1.5.10"
 	kotlin("jvm") version kotlinVersion
 	kotlin("plugin.spring") version kotlinVersion apply false
 	kotlin("plugin.jpa") version kotlinVersion apply false
 
-	id("org.springframework.boot") version "2.4.2" apply false
-	id("io.spring.dependency-management") version "1.0.10.RELEASE" apply false
+	id("org.springframework.boot") version "2.5.1" apply false
+	id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
 	id("org.jetbrains.kotlin.plugin.allopen") version kotlinVersion apply false
 	id("org.jetbrains.kotlin.plugin.noarg") version kotlinVersion apply false
 
-	id("io.gitlab.arturbosch.detekt") version "1.15.0"
+	id("io.gitlab.arturbosch.detekt") version "1.17.1"
 	id("jacoco")
-	id("com.google.cloud.tools.jib") version "2.7.1" apply false
+	id("com.google.cloud.tools.jib") version "2.8.0" apply false
 }
 
 allprojects {
@@ -22,7 +22,7 @@ allprojects {
 	version = "0.0.1"
 
 	repositories {
-		jcenter()
+		mavenCentral()
 	}
 
 	tasks.withType<Test> {
@@ -51,7 +51,7 @@ subprojects {
 	apply(plugin = "jacoco")
 
 	jacoco {
-		toolVersion = "0.8.5"
+		toolVersion = "0.8.7"
 	}
 
 	tasks.jacocoTestReport {

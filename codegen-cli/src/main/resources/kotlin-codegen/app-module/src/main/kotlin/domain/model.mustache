@@ -9,6 +9,7 @@ import lombok.Setter;
 {{#models}}
 {{#model}}
 {{#isEnum}}
+{{>enum}}
 {{/isEnum}}
 {{^isEnum}}
 {{>pojo}}

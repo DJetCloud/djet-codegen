@@ -11,6 +11,10 @@ import {{basePackage}}.domain.Identity
 {{/hasPathParent}}
 import {{appPackage}}.{{appRealName}}Application
 import {{appPackage}}.repository.{{repositoryClassname}}
+{{#testModel.vendorExtensions.isEnumClasses}}
+import {{basePackage}}.domain.EntityState
+import {{appPackage}}.domain.*
+{{/testModel.vendorExtensions.isEnumClasses}}
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -62,7 +66,7 @@ class {{classname}}IT : AbstractIntegrationTest<{{returnEntityType}}>() {
 		assertEquals(savedResource.entity.state, getValue(result, "$prefix.entity.state"))
 		{{/vendorExtensions.hasIdentity}}
 		{{#vars}}
-		{{^isListContainer}}
+		{{^isArray}}
 		{{#vendorExtensions.hasTestModel}}
 		assertObjectEquals(savedResource.{{name}}, getValue(result, "$prefix.{{name}}"))
 		{{/vendorExtensions.hasTestModel}}
@@ -71,13 +75,18 @@ class {{classname}}IT : AbstractIntegrationTest<{{returnEntityType}}>() {
 		assertDateEquals(savedResource.{{name}}, getValue(result, "$prefix.{{name}}"))
 		{{/isDate}}
 		{{^isDate}}
+		{{#vendorExtensions.isBigDecimal}}
+		assertEquals(savedResource.{{name}}, getValue<Double?>(result, "$prefix.{{name}}")?.toBigDecimal())
+		{{/vendorExtensions.isBigDecimal}}
+		{{^vendorExtensions.isBigDecimal}}
 		assertEquals(savedResource.{{name}}, getValue(result, "$prefix.{{name}}"){{#isInteger}} as Int?{{/isInteger}})
+		{{/vendorExtensions.isBigDecimal}}
 		{{/isDate}}
 		{{/vendorExtensions.hasTestModel}}
-		{{/isListContainer}}
-		{{#isListContainer}}
+		{{/isArray}}
+		{{#isArray}}
 		assertListsEquals(savedResource.{{name}}, getValue(result, "$prefix.{{name}}"))
-		{{/isListContainer}}
+		{{/isArray}}
 		{{/vars}}
 		{{/testModel}}
 	}
@@ -87,17 +96,17 @@ class {{classname}}IT : AbstractIntegrationTest<{{returnEntityType}}>() {
 			{{#testModel}}
 				{{#vars}}
 				{{#required}}
-				{{>app-module/src/test/kotlin/controller/apiTestVar}}{{#hasMore}},{{/hasMore}}
+				{{>app-module/src/test/kotlin/controller/apiTestVar}}{{^-last}},{{/-last}}
 				{{/required}}
 				{{^required}}
-				{{name}} = null{{#hasMore}},{{/hasMore}}
+				{{name}} = null{{^-last}},{{/-last}}
 				{{/required}}
 				{{/vars}}
 			{{/testModel}}
 		){{#testModel.vendorExtensions.hasIdentity}}.apply {
 			this.identity.name = "test name"
 			this.identity.description = "test description"
-			this.entity.state = "active"
+			this.entity.state = {{testModel.vendorExtensions.activeState}}
 			{{#hasPathParent}}
 			this.entity.parent = Identity(id = "parent-id")
 			{{/hasPathParent}}
@@ -108,13 +117,13 @@ class {{classname}}IT : AbstractIntegrationTest<{{returnEntityType}}>() {
 		return {{returnEntityType}}(
 			{{#testModel}}
 				{{#vars}}
-				{{>app-module/src/test/kotlin/controller/apiTestVar}}{{#hasMore}},{{/hasMore}}
+				{{>app-module/src/test/kotlin/controller/apiTestVar}}{{^-last}},{{/-last}}
 				{{/vars}}
 			{{/testModel}}
 		){{#testModel.vendorExtensions.hasIdentity}}.apply {
 			this.identity.name = "test user name"
 			this.identity.description = "test user description"
-			this.entity.state = "active"
+			this.entity.state = {{testModel.vendorExtensions.activeState}}
 			{{#hasPathParent}}
 			this.entity.parent = Identity(id = "parent-id")
 			{{/hasPathParent}}

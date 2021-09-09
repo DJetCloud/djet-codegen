@@ -9,6 +9,8 @@ import org.openapitools.codegen.CodegenModel
 import org.openapitools.codegen.CodegenProperty
 import pro.bilous.codegen.process.models.IModelStrategyResolver
 import pro.bilous.codegen.process.models.ModelStrategyResolver
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 internal class FromModelProcessorTest {
 
@@ -94,5 +96,27 @@ internal class FromModelProcessorTest {
 		verify(resolver).resolveParent(testArgs)
 		verify(resolver).cleanupImports()
 		verify(resolver).addExtensions(testArgs)
+	}
+
+	@Test
+	fun `should set class of model as data if any var presents`() {
+		val processor = FromModelProcessor(mock())
+		val model = CodegenModel().apply {
+			name = "Account"
+			vars = listOf(CodegenProperty())
+		}
+		processor.resolveDataClass(model)
+		assertTrue(model.vendorExtensions["isDataClass"] as Boolean)
+	}
+
+	@Test
+	fun `should not set class of model as data if no var presents`() {
+		val processor = FromModelProcessor(mock())
+		val model = CodegenModel().apply {
+			name = "Account"
+			vars = listOf()
+		}
+		processor.resolveDataClass(model)
+		assertFalse(model.vendorExtensions["isDataClass"] as Boolean)
 	}
 }

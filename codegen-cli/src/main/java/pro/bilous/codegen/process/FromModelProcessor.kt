@@ -24,6 +24,8 @@ class FromModelProcessor(val codegen: CodeCodegen) {
 
 		fixRequiredFieldsDefaultValue(codegenModel)
 
+		resolveDataClass(codegenModel)
+
 		return codegenModel
 	}
 
@@ -54,6 +56,10 @@ class FromModelProcessor(val codegen: CodeCodegen) {
 		resolver.resolveParent(args)
 		resolver.cleanupImports()
 		resolver.addExtensions(args)
+	}
+
+	fun resolveDataClass(model: CodegenModel) {
+		model.vendorExtensions["isDataClass"] = model.vars.isNotEmpty()
 	}
 
 }

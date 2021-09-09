@@ -3,6 +3,7 @@ package pro.bilous.codegen.process.strategy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.openapitools.codegen.CodegenProperty
+import kotlin.test.assertEquals
 
 class DefaultTypeResolvingStrategyTest {
 
@@ -218,5 +219,19 @@ class DefaultTypeResolvingStrategyTest {
 		val ve = property.vendorExtensions
 		kotlin.test.assertEquals("VARCHAR(${DEFAULT_STRING_SIZE})", ve["columnType"])
 		kotlin.test.assertEquals("java.lang.String", ve["hibernateType"])
+	}
+
+	@Test
+	fun `should return text type for x-data-type=text`() {
+		val property = CodegenProperty().apply {
+			datatypeWithEnum = "String?"
+			vendorExtensions["x-data-type"] = "Text"
+		}
+
+		DefaultTypeResolvingStrategy().resolvePropertyType(property)
+
+		assertEquals("\${TEXT_TYPE}", property.vendorExtensions["columnType"])
+		assertEquals("java.lang.String", property.vendorExtensions["hibernateType"])
+		assertEquals("text", property.vendorExtensions["columnDefinition"])
 	}
 }

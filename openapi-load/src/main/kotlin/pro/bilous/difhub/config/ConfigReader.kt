@@ -2,12 +2,11 @@ package pro.bilous.difhub.config
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 object ConfigReader {
+
+	private const val DEFAULT_ORGANIZATION = "Demo org"
+	private const val DEFAULT_API_URL = "https://metaserviceprod.azurewebsites.net/api"
 
 	private val mapper = createMapper()
 
@@ -15,12 +14,15 @@ object ConfigReader {
 		return ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
 	}
 
-	fun loadConfig(): Config {
-		var orgName = System.getProperty("DIFHUB_ORG_NAME")
-		if (orgName.isNullOrEmpty()) {
-			orgName = System.getenv("DIFHUB_ORG_NAME") ?: "Demo org"
+	fun loadConfig(organization: String? = null): Config {
+		val resolvedOrg = organization ?: let {
+			var orgFromSystem = System.getProperty("DIFHUB_ORG_NAME")
+			if (orgFromSystem.isNullOrEmpty()) {
+				orgFromSystem = System.getenv("DIFHUB_ORG_NAME") ?: DEFAULT_ORGANIZATION
+			}
+			orgFromSystem
 		}
-		return Config(DifHub("https://metaserviceprod.azurewebsites.net/api", "/$orgName"))
+		return Config(DifHub(DEFAULT_API_URL, "/$resolvedOrg"))
 //		val configUrl = ConfigReader::class.java.getResource("/config.yaml")
 //		val path = Paths.get(configUrl.toURI())
 //		return loadFromFile(path)

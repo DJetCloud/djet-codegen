@@ -156,7 +156,7 @@ class ModelPropertyProcessorTest {
 		val property = CodegenProperty()
 		property.name = "MyJsonProperty"
 		property.datatypeWithEnum = "OtherType"
-		property.isListContainer = true
+		property.isArray = true
 		property.example = "null"
 		val model = CodegenModel()
 		model.name = "Name"
@@ -214,13 +214,12 @@ class ModelPropertyProcessorTest {
 	@Test
 	fun `should assign embedded component`() {
 		val type = "AnComplexEntity"
-		val model = CodegenModel()
 		val property = CodegenProperty().apply {
 			isModel = true// only model can be embedded
 			complexType = type // with required complex type
 		}
 		val processor = createModelProcessor(type, true)
-		processor.applyEmbeddedComponentOrOneToOne(model, property)
+		processor.applyEmbeddedComponentOrOneToOne(property)
 
 		assertTrue(property.vendorExtensions["isEmbedded"] as Boolean)
 		assertFalse(property.vendorExtensions.containsKey("isOneToOne"))
@@ -230,13 +229,12 @@ class ModelPropertyProcessorTest {
 	fun `should assign one-to-one relationship`() {
 		val type = "AnComplexEntity"
 
-		val model = CodegenModel()
 		val property = CodegenProperty().apply {
 			isModel = true// only model can be embedded
 			complexType = type // with required complex type
 		}
 		val processor = createModelProcessor(type, false)
-		processor.applyEmbeddedComponentOrOneToOne(model, property)
+		processor.applyEmbeddedComponentOrOneToOne(property)
 
 		assertTrue(property.vendorExtensions["isOneToOne"] as Boolean)
 		assertFalse(property.vendorExtensions.containsKey("isEmbedded"))
@@ -244,12 +242,11 @@ class ModelPropertyProcessorTest {
 
 	@Test
 	fun `should ignore embedding and one-to-one`() {
-		val model = CodegenModel()
 		val property = CodegenProperty().apply {
 			isModel = false// only model can be embedded
 		}
 		val processor = createModelProcessor("String", false)
-		processor.applyEmbeddedComponentOrOneToOne(model, property)
+		processor.applyEmbeddedComponentOrOneToOne(property)
 
 		assertFalse(property.vendorExtensions.containsKey("isOneToOne"))
 		assertFalse(property.vendorExtensions.containsKey("isEmbedded"))

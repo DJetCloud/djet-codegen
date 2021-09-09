@@ -9,16 +9,14 @@ import io.swagger.v3.oas.models.responses.ApiResponses
 import io.swagger.v3.oas.models.servers.Server
 import org.openapitools.codegen.languages.AbstractJavaCodegen
 import org.openapitools.codegen.utils.ModelUtils
-import org.slf4j.LoggerFactory
-
-import java.io.File
-
 import org.openapitools.codegen.utils.StringUtils.camelize
+import org.slf4j.LoggerFactory
 import pro.bilous.codegen.process.*
 import pro.bilous.codegen.process.filename.ModelFileNameArgs
 import pro.bilous.codegen.process.filename.ModelFileNameResolver
 import pro.bilous.codegen.process.models.AllModelsProcessor
 import pro.bilous.codegen.process.models.CommonModelsProcessor
+import java.io.File
 
 open class CodeCodegen : AbstractJavaCodegen() {
 	companion object {
@@ -34,6 +32,7 @@ open class CodeCodegen : AbstractJavaCodegen() {
 		const val DB_NAME = "dbName"
 		const val BINDING_KEY = "addBindingEntity"
 		const val AUTHORIZATION_ENABLED = "authorizationEnabled"
+		const val ENUM_TYPE = "enumsType"
 	}
 
 	fun isEnableMerge(): Boolean {
@@ -66,6 +65,7 @@ open class CodeCodegen : AbstractJavaCodegen() {
 	var servicePackage: String? = null
 	var mapperPackage: String? = null
 	var validationPackage: String? = null
+	var enumType: String? = null
 
 	private var responseWrapper = ""
 
@@ -151,6 +151,8 @@ open class CodeCodegen : AbstractJavaCodegen() {
 		//cliOptions.add(CliOption.newBoolean(SUB_MODULES, "Generate sub modules", enableSubModules));
 		cliOptions.add(CliOption(DB_NAME, "database name for generated code").defaultValue(dbName))
 		cliOptions.add(CliOption.newBoolean(BINDING_KEY, "add Binding entity support to the service", false))
+		cliOptions.add(CliOption(ENUM_TYPE, "EnumType").defaultValue("EnumClasses"))
+
 		modelPropertyProcessor = ModelPropertyProcessor(this)
 	}
 
@@ -348,8 +350,14 @@ open class CodeCodegen : AbstractJavaCodegen() {
 		return (this.outputFolder + File.separator + modelFolder).replace('/', File.separatorChar)
 	}
 
+	/** Add trailing dashes to allow tests overwrite by codegen
+	 * see why **[DefaultGenerator.generateApis]** block code where __generateApiTests__ used
+	 **/
 	override fun apiTestFilename(templateName: String, tag: String): String {
-		val suffix = apiTestTemplateFiles()[templateName]
+		val suffix = apiTestTemplateFiles()[templateName] +
+			if (additionalProperties.getOrDefault("overwriteTests", false) as Boolean) {
+				"__"
+			} else ""
 		val fileFolder = if (templateName.startsWith("resources/integration-test")) {
 			apiIntegrationTestFolder()
 		} else apiTestFileFolder()
@@ -394,5 +402,19 @@ open class CodeCodegen : AbstractJavaCodegen() {
 			return processor.resolveImport(name)
 		}
 		return super.toModelImport(name)
+	}
+
+	fun addSupportFile(source: String, folder: String = "", target: String, condition: Boolean = true) {
+		if (condition) {
+			supportingFiles.add(SupportingFile(source, folder.replace(".", File.separator), target))
+		}
+	}
+
+	override fun postProcess() {
+		println("################################################################################")
+		println("# Thanks for using DJet Codegen.                                               #")
+		println("# Please star this project https://github.com/DJetCloud/djet-codegen \uD83D\uDE4F        #")
+		println("# Project site https://djet.cloud                                              #")
+		println("################################################################################")
 	}
 }

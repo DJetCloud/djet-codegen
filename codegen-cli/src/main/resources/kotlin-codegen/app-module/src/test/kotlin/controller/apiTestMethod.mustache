@@ -40,7 +40,7 @@
 	fun `{{vendorExtensions.operationMethodName}} with required fields`() {
 		val res = createWithRequiredFields()
 		val result = super.create(url, res)
-		val savedRes = repository.getOne(findIdentityId(result))
+		val savedRes = repository.getById(findIdentityId(result))
 		resourceAsserts(savedRes, result)
 	}
 
@@ -48,7 +48,7 @@
 	fun `{{vendorExtensions.operationMethodName}} with all fields`() {
 		val res = createWithAllFields()
 		val result = super.create(url, res)
-		val savedRes = repository.getOne(findIdentityId(result))
+		val savedRes = repository.getById(findIdentityId(result))
 		resourceAsserts(savedRes, result)
 	}
 {{/vendorExtensions.isPostMethod}}
@@ -101,7 +101,7 @@
 
 		val result = super.delete(url, savedRes.id!!)
 		{{#testModel.vendorExtensions.hasEntity}}
-		savedRes.entity.state = "deleted"
+		savedRes.entity.state = {{testModel.vendorExtensions.deletedState}}
 		{{/testModel.vendorExtensions.hasEntity}}
 		resourceAsserts(savedRes, result)
 	}
