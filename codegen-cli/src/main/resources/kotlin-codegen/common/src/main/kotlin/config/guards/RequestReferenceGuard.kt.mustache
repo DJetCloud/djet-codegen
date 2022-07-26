@@ -1,5 +1,9 @@
 package {{basePackage}}.config.guards
 
+{{#security.guards.referenceGuard.v2}}
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken
+import org.springframework.security.core.Authentication
+{{/security.guards.referenceGuard.v2}}
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -14,8 +18,47 @@ class RequestReferenceGuard(private val rest: RestTemplate) {
 
 	companion object {
 		private val log = LoggerFactory.getLogger(RequestHeaderGuard::class.java)
+{{#security.guards.referenceGuard.v2}}
+		private const val REQUIRED_CLAIM = "parties"
+		private const val ACCESS_HEADER_NAME = "X-access-partyId"
+		private const val RESOURCE_URI_HEADER_NAME = "X-resource-URI"
+		private const val RESOURCE_METHOD_HEADER_NAME = "X-resource-method"
+{{/security.guards.referenceGuard.v2}}
 	}
 
+{{#security.guards.referenceGuard.v2}}
+	fun check(auth: Authentication,
+			  request: HttpServletRequest,
+			  headerName: String,
+			  format: String): Boolean {
+		if (auth !is KeycloakAuthenticationToken) {
+			log.warn("Authentication has unsupported type")
+			return false
+		}
+		val header = request.getHeader(headerName)
+		if (header == null) {
+			log.debug("Header $headerName is missing")
+			return false
+		}
+		val accessHeader = request.getHeader(ACCESS_HEADER_NAME)
+		if (accessHeader == null) {
+			log.debug("Access header '$ACCESS_HEADER_NAME' is missing")
+			return false
+		}
+		val claims = auth.account.keycloakSecurityContext.token.otherClaims
+		if (claims.isNullOrEmpty()) {
+			log.warn("Claims not found in token")
+			return false
+		}
+		val claimsList = (claims[REQUIRED_CLAIM] ?: {
+			log.warn("Claim '$REQUIRED_CLAIM' not found in token")
+			false
+		}).toString().split(",")
+		if(!claimsList.contains(accessHeader)) {
+			return false
+		}
+{{/security.guards.referenceGuard.v2}}
+{{^security.guards.referenceGuard.v2}}
 	fun check(request: HttpServletRequest,
 			  headerName: String,
 			  format: String): Boolean {
@@ -24,6 +67,7 @@ class RequestReferenceGuard(private val rest: RestTemplate) {
 			log.debug("Header $headerName is missing")
 			return false
 		}
+{{/security.guards.referenceGuard.v2}}
 
 		val formatParts = format.split("/")
 		// 1st part should define host of the application
@@ -41,7 +85,13 @@ class RequestReferenceGuard(private val rest: RestTemplate) {
 			for (itHeader in request.headerNames) {
 				set(itHeader, request.getHeader(itHeader))
 			}
+{{#security.guards.referenceGuard.v2}}
+			set(RESOURCE_URI_HEADER_NAME, request.requestURI)
+			set(RESOURCE_METHOD_HEADER_NAME, request.method)
+{{/security.guards.referenceGuard.v2}}
+{{^security.guards.referenceGuard.v2}}
 			set("X-entity-partyId", request.getHeader("X-access-partyId"))
+{{/security.guards.referenceGuard.v2}}
 		})
 
 		return try {

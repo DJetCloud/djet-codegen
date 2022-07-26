@@ -130,6 +130,15 @@ class OpenApiProcessor(val codegen: CodeCodegen) {
 		return allParams
 	}
 
+	private val isReferenceGuardV2 = resolveReferenceGuardV2()
+
+	private fun resolveReferenceGuardV2(): Boolean {
+		val security = additionalProperties["security"] as? Map<*, *> ?: return false
+		val guards = security["guards"] as? Map<*, *> ?: return false
+		val referenceGuard = guards["referenceGuard"] as? Map<*, *> ?: return false
+		return referenceGuard["v2"] as? Boolean ?: false
+	}
+
 	private fun findGuardsInPath(path: PathItem): List<Map<String, Any?>> {
 		val guards = mutableListOf<Map<String, Any?>>()
 		val allParams = findAllParams(path)
@@ -158,7 +167,11 @@ class OpenApiProcessor(val codegen: CodeCodegen) {
 				else -> "headerGuard"
 			}
 			val guardArgs = when(guardName) {
-				"referenceGuard" -> listOf("request", "'${param.name}'", "'$authFormat'")
+				"referenceGuard" -> if (isReferenceGuardV2) {
+					listOf("authentication", "request", "'${param.name}'", "'$authFormat'")
+				} else {
+					listOf("request", "'${param.name}'", "'$authFormat'")
+				}
 				"headerGuard" ->  listOf("authentication", "request", "'${param.name}'", "'$authFormat'")
 				else -> null
 			}
